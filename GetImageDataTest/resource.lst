@@ -1,0 +1,11 @@
+.res ARGB_PNG
+.image "argb.png"
+
+.res RGB_PNG
+.image "rgb.png"
+
+.res RGB_JPG
+.image "rgb.jpg"
+
+.res MICKE_JPG
+.image "micke.jpg"
