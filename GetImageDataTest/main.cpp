@@ -34,23 +34,11 @@ static unsigned int sRGB[] = {
 	0xffffffff,
 };
 
-static unsigned int sRGB_JPG[] = {
-	0xff080010,
-	0xff0000f7,
-	0xff00ff10,
-	0xff00fff7,
-	0xffff0410,
-	0xffff00f7,
-	0xffffff10,
-	0xfffffff7,
-};
-
 void GetImageDataTest()
 {
 	// Image resources
 	MAHandle image1 = 1; // ARGB_PNG
 	MAHandle image2 = 2; // RGB_PNG
-	MAHandle image3 = 3; // RGB_JPG
 
 	// Pixels in each image
 	int IMAGE16 = 16;
@@ -67,10 +55,6 @@ void GetImageDataTest()
 	MARect rect2 = {0, 0, IMAGE8, 1};
 	maGetImageData(image2, buffer2, &rect2, IMAGE8);
 	int success2 = 0 == memcmp(sRGB, buffer2, IMAGE8);
-
-	// JPG image, reusing buffer2
-	maGetImageData(image3, buffer2, &rect2, IMAGE8);
-	int success3 = 0 == memcmp(sRGB_JPG, buffer2, IMAGE8);
 
 	if (success1)
 	{
@@ -99,23 +83,11 @@ void GetImageDataTest()
 			buffer2[0],buffer2[1],buffer2[2],buffer2[3],
 			buffer2[4],buffer2[5],buffer2[6],buffer2[7]);
 	}
-
-	if (success3)
-	{
-		printf("Test 3 passed\n");
-	}
-	else
-	{
-		printf("Test 3 failed\n");
-		printf("%08x,%08x,%08x,%08x,%08x,%08x,%08x,%08x",
-			buffer2[0],buffer2[1],buffer2[2],buffer2[3],
-			buffer2[4],buffer2[5],buffer2[6],buffer2[7]);
-	}
 }
 
 void GetImageDataDisplayTest()
 {
-	MAHandle imageResource = 4; // MICKE_JPG
+	MAHandle imageResource = 3; // MICKE_JPG
 
 	// Do test with a bigger JPEG image
 	maDrawImage(imageResource, 0, 0);
