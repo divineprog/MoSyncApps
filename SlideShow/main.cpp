@@ -168,41 +168,64 @@ public:
 
 	MAHandle getImage(int index)
 	{
-		// Is the image loaded?
+		// Is the image already loaded?
 		if (NULL != mImageCache[index])
 		{
-			// Return it.
+			// Yes it is, return it.
 			return mImageCache[index];
 		}
 
-		// Try to load the image until successful.
+		// Load the requested image
+		// Resource indexes start at 1 (not zero).
+		MAHandle image = loadImageFromResource(index + 1);
+		if (NULL != image)
+		{
+			// Success. Save image cache.
+			mImageCache[index] = image;
+
+			// Return the image.
+			return image;
+		}
+
+		// If failed to load, free cached images and
+		// attempt to load image again.
+		if (NULL == image)
+		{
+			freeAllImages();
+		}
+
+		// Attempt to load the image again.
+		image = loadImageFromResource(index + 1);
+		if (NULL != image)
+		{
+			// Success. Save image cache.
+			mImageCache[index] = image;
+
+			// Return the image.
+			return image;
+		}
+
+		// Error, image could not be loaded.
+		return NULL;
+	}
+
+	void freeAllImages()
+	{
+		// Print log message to track cache use.
+		lprintfln("SlideShow: Deleting cached images.");
+
+		// Free all images. This is overkill, but is a
+		// solution that works well with this example.
 		for (int i = 0; i < mNumberOfImages; ++i)
 		{
-			// Resource indexes start at 1 (not zero).
-			MAHandle image = loadImageFromResource(index + 1);
-			if (NULL != image)
-			{
-				// Success. Save image cache.
-				mImageCache[index] = image;
-
-				// Return the image.
-				return image;
-			}
-
-			// Image was not loaded. Free an image.
+			// Free image at current index.
 			if (NULL != mImageCache[i])
 			{
-				// Print log message to track cache use.
-				lprintfln("SlideShow: Deleting cached image.");
-
 				// Free the image.
 				maDestroyObject(mImageCache[i]);
 				mImageCache[i] = NULL;
 			}
 		}
-
-		// Image could not be loaded.
-		return NULL;
 	}
 
 	MAHandle loadImageFromResource(int resourceId)
