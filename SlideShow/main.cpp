@@ -76,7 +76,7 @@
 using namespace MAUtil;
 
 // Hard coded value for the number of images.
-#define NUMBER_OF_IMAGES 24
+#define NUMBER_OF_IMAGES 48
 
 /**
  * Moblet that displays images (slides).
@@ -212,7 +212,7 @@ public:
 	void freeAllImages()
 	{
 		// Print log message to track cache use.
-		lprintfln("SlideShow: Deleting cached images.");
+		lprintfln("@@@ SlideShow: Deleting cached images.");
 
 		// Free all images. This is overkill, but is a
 		// solution that works well with this example.
