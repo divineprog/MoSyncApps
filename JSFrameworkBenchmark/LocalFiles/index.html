@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<!--
+* @file index.html
+* @author Mikael Kindborg
+*
+* JavaScript framework performance tests.
+-->
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width">
+		<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+		<title>Page</title>
+		<link rel="stylesheet" href="style.css" type="text/css" media="screen" title="no title" charset="utf-8">
+		<style type="text/css">
+		.button {
+			text-align: left;
+			cursor: default;
+		}
+		</style>
+		<script type="text/javascript" charset="utf-8" src="js/wormhole.js"></script>
+		<script type="text/javascript" charset="utf-8" src="zepto.1.0rc1.min.js"></script>
+		<script type="text/javascript">
+		var app = (function()
+		{
+			var app = {};
+
+			/**
+			 * Initialize the JavaScript part of the application.
+			 */
+			app.init = function()
+			{
+				// Exit app on back button (on Android).
+				document.addEventListener(
+					"backbutton",
+					function()
+					{
+						mosync.bridge.send(["close"]);
+					},
+					true);
+			};
+
+			app.pageLoaded = function()
+			{
+				mosync.bridge.send([
+					"Custom",
+					"PageLoaded"]);
+			};
+
+			app.pageReady = function()
+			{
+				mosync.bridge.send([
+					"Custom",
+					"PageReady"]);
+			};
+			
+			return app;
+		})();
+		
+		var iterations = 5000;
+		
+		app.createDOM = function()
+		{
+			var startTime = new Date().getTime();
+			
+			var body = $("body");
+			var parent = $(document.createElement("div"));
+			parent.attr("id", "parent");
+			body.append(parent);
+			for (var i = 0; i <= iterations; ++i)
+			{
+				var child = $(document.createElement("div"));
+				child.attr("id", "child" + i);
+				child.html("Hello " + i);
+				child.css("font-size", "1em");
+				child.css("font-weight", "bold");
+				parent.append(child);
+			}
+
+			var endTime = new Date().getTime();
+			
+			app.data.createDOMTime = endTime - startTime;
+	
+			// Next test.
+			setTimeout(app.modifyDOM, 500);
+		};
+		
+		app.modifyDOM = function()
+		{
+			var startTime = new Date().getTime();
+
+			for (var i = 0; i <= iterations; ++i)
+			{
+				var div = $("#child" + i);
+				div.html("Hello World " + i)
+			}
+
+			var endTime = new Date().getTime();
+			
+			app.data.modifyDOMTime = endTime - startTime;
+			
+			// Next test.
+			setTimeout(app.deleteDOM, 500);
+		};
+
+		app.deleteDOM = function()
+		{
+			var startTime = new Date().getTime();
+			
+			// Delete a child div at a time.
+			for (var i = 0; i <= iterations; ++i)
+			{
+				var div = $("#child" + i);
+				div.remove();
+			}
+
+			var endTime = new Date().getTime();
+			
+			app.data.deleteDOMTime = endTime - startTime;
+			
+			// Show result.
+			setTimeout(app.showResult, 500);
+		};
+		
+		// Called from C++
+		app.loadingCompleted = function(data)
+		{
+			// Store load time data sent from C++.
+			// We will use app.data to collect statistics.
+			app.data = data;
+			
+			console.log("pageLoadTime: " + data.pageLoadTime);
+			
+			// First test.
+			setTimeout(app.createDOM, 500);
+		};
+		
+		app.showResult = function()
+		{
+			$("#content")
+				.append($("<p/>").html("StartUpTime: " + app.data.startUpTime))
+				.append($("<p/>").html("PageLoadTime: " + app.data.pageLoadTime))
+				.append($("<p/>").html("PageReadyTime: " + app.data.pageReadyTime))
+				.append($("<p/>").html("CreateDOMTime: " + app.data.createDOMTime))
+				.append($("<p/>").html("ModifyDOMTime: " + app.data.modifyDOMTime))
+				.append($("<p/>").html("DeleteDOMTime: " + app.data.deleteDOMTime))
+				;
+		}
+		
+		// The ready function.
+		$(function()
+		{ 
+			app.init();
+			app.pageReady();
+		});
+		
+		
+		// http://alittlecode.com/build-a-faster-html5-app-with-backbone-js-zepto-js-and-trigger-io/
+		
+		window.onload = app.pageLoaded;
+		</script>
+	</head>
+	<body>
+		<div id="screen">
+			<div id="heading">Benchmark Page</div>
+			<div id="content" class="pane button">
+				<p>JS Framework Performance Test</p>
+				<!-- <img src="img/MoSyncLogo.png"/> -->
+			</div>
+		</div>
+		<script>
+		// We use window.onload instead.
+		//app.pageLoaded();
+		</script>
+	</body>
+</html>
