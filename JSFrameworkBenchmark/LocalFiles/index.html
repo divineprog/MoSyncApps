@@ -3,7 +3,7 @@
 * @file index.html
 * @author Mikael Kindborg
 *
-* JavaScript framework performance tests.
+* JavaScript framework performance test.
 -->
 <html>
 	<head>
@@ -20,13 +20,15 @@
 		<script type="text/javascript" charset="utf-8" src="js/wormhole.js"></script>
 		<script type="text/javascript" charset="utf-8" src="zepto.1.0rc1.min.js"></script>
 		<script type="text/javascript">
+		/**
+		 * Code is encapsulated in the app object.
+		 */
 		var app = (function()
 		{
 			var app = {};
 
-			/**
-			 * Initialize the JavaScript part of the application.
-			 */
+			// **************** JS/C++ Bridge **************** //
+			
 			app.init = function()
 			{
 				// Exit app on back button (on Android).
@@ -39,6 +41,7 @@
 					true);
 			};
 
+			// Tell C++ page is loaded.
 			app.pageLoaded = function()
 			{
 				mosync.bridge.send([
@@ -46,125 +49,132 @@
 					"PageLoaded"]);
 			};
 
+			// Tell C++ page is ready.
 			app.pageReady = function()
 			{
 				mosync.bridge.send([
 					"Custom",
 					"PageReady"]);
 			};
+
+			// Called from C++, starts tests.
+			app.loadingCompleted = function(data)
+			{
+				// Store load time data sent from C++.
+				// We will use app.data to collect statistics.
+				app.data = data;
+				
+				console.log("pageLoadTime: " + data.pageLoadTime);
+				
+				// First test.
+				setTimeout(app.createDOM, 500);
+			};
 			
+			// **************** Tests **************** //
+			
+			// Number of iterations in tests.
+			var iterations = 5000;
+			
+			// Create DOM test.
+			app.createDOM = function()
+			{
+				var startTime = new Date().getTime();
+				
+				var body = $("body");
+				var parent = $(document.createElement("div"));
+				parent.attr("id", "parent");
+				body.append(parent);
+				for (var i = 0; i <= iterations; ++i)
+				{
+					var child = $(document.createElement("div"));
+					child.attr("id", "child" + i);
+					child.html("Hello " + i);
+					child.css("font-size", "1em");
+					child.css("font-weight", "bold");
+					parent.append(child);
+				}
+	
+				var endTime = new Date().getTime();
+				
+				app.data.createDOMTime = endTime - startTime;
+		
+				// Next test.
+				setTimeout(app.modifyDOM, 500);
+			};
+	
+			// Modify DOM test.
+			app.modifyDOM = function()
+			{
+				var startTime = new Date().getTime();
+	
+				for (var i = 0; i <= iterations; ++i)
+				{
+					var div = $("#child" + i);
+					div.html("Hello World " + i)
+				}
+	
+				var endTime = new Date().getTime();
+				
+				app.data.modifyDOMTime = endTime - startTime;
+				
+				// Next test.
+				setTimeout(app.deleteDOM, 500);
+			};
+	
+			// Delete DOM test.
+			app.deleteDOM = function()
+			{
+				var startTime = new Date().getTime();
+				
+				// Delete a child div at a time.
+				for (var i = 0; i <= iterations; ++i)
+				{
+					var div = $("#child" + i);
+					div.remove();
+				}
+	
+				var endTime = new Date().getTime();
+				
+				app.data.deleteDOMTime = endTime - startTime;
+				
+				// Show result.
+				setTimeout(app.showResult, 500);
+			};
+			
+			// Display test result.
+			app.showResult = function()
+			{
+				$("#content")
+					.append($("<p/>").html("StartUpTime: " + app.data.startUpTime))
+					.append($("<p/>").html("PageLoadTime: " + app.data.pageLoadTime))
+					.append($("<p/>").html("PageReadyTime: " + app.data.pageReadyTime))
+					.append($("<p/>").html("CreateDOMTime: " + app.data.createDOMTime))
+					.append($("<p/>").html("ModifyDOMTime: " + app.data.modifyDOMTime))
+					.append($("<p/>").html("DeleteDOMTime: " + app.data.deleteDOMTime))
+					;
+			};
+
 			return app;
 		})();
 		
-		var iterations = 5000;
+		// **************** Page ready/load **************** //
 		
-		app.createDOM = function()
-		{
-			var startTime = new Date().getTime();
-			
-			var body = $("body");
-			var parent = $(document.createElement("div"));
-			parent.attr("id", "parent");
-			body.append(parent);
-			for (var i = 0; i <= iterations; ++i)
-			{
-				var child = $(document.createElement("div"));
-				child.attr("id", "child" + i);
-				child.html("Hello " + i);
-				child.css("font-size", "1em");
-				child.css("font-weight", "bold");
-				parent.append(child);
-			}
-
-			var endTime = new Date().getTime();
-			
-			app.data.createDOMTime = endTime - startTime;
-	
-			// Next test.
-			setTimeout(app.modifyDOM, 500);
-		};
-		
-		app.modifyDOM = function()
-		{
-			var startTime = new Date().getTime();
-
-			for (var i = 0; i <= iterations; ++i)
-			{
-				var div = $("#child" + i);
-				div.html("Hello World " + i)
-			}
-
-			var endTime = new Date().getTime();
-			
-			app.data.modifyDOMTime = endTime - startTime;
-			
-			// Next test.
-			setTimeout(app.deleteDOM, 500);
-		};
-
-		app.deleteDOM = function()
-		{
-			var startTime = new Date().getTime();
-			
-			// Delete a child div at a time.
-			for (var i = 0; i <= iterations; ++i)
-			{
-				var div = $("#child" + i);
-				div.remove();
-			}
-
-			var endTime = new Date().getTime();
-			
-			app.data.deleteDOMTime = endTime - startTime;
-			
-			// Show result.
-			setTimeout(app.showResult, 500);
-		};
-		
-		// Called from C++
-		app.loadingCompleted = function(data)
-		{
-			// Store load time data sent from C++.
-			// We will use app.data to collect statistics.
-			app.data = data;
-			
-			console.log("pageLoadTime: " + data.pageLoadTime);
-			
-			// First test.
-			setTimeout(app.createDOM, 500);
-		};
-		
-		app.showResult = function()
-		{
-			$("#content")
-				.append($("<p/>").html("StartUpTime: " + app.data.startUpTime))
-				.append($("<p/>").html("PageLoadTime: " + app.data.pageLoadTime))
-				.append($("<p/>").html("PageReadyTime: " + app.data.pageReadyTime))
-				.append($("<p/>").html("CreateDOMTime: " + app.data.createDOMTime))
-				.append($("<p/>").html("ModifyDOMTime: " + app.data.modifyDOMTime))
-				.append($("<p/>").html("DeleteDOMTime: " + app.data.deleteDOMTime))
-				;
-		}
-		
-		// The ready function.
+		// Set the page ready function.
 		$(function()
 		{ 
 			app.init();
 			app.pageReady();
 		});
 		
-		
-		// http://alittlecode.com/build-a-faster-html5-app-with-backbone-js-zepto-js-and-trigger-io/
-		
+		// Set the page load function.
 		window.onload = app.pageLoaded;
 		</script>
 	</head>
 	<body>
 		<div id="screen">
-			<div id="heading">Benchmark Page</div>
+			<div id="heading">Benchmark</div>
 			<div id="content" class="pane button">
 				<p>JS Framework Performance Test</p>
-				<!-- <img src="img/MoSyncLogo.png"/> -->
 			</div>
 		</div>
 		<script>
