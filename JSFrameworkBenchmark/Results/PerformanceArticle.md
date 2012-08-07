@@ -45,8 +45,7 @@ We used the following versions of the libraries:
 
 The app tests the following:
 
-* App startup time
-* Library loading time
+* Page loading time
 * Performance of DOM manipulation:
     * Create DOM elements (create + style + add)
     * Modify DOM elements (access + modify text)
