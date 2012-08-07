@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<!--
+* @file TextToTable.html
+* @author Mikael Kindborg
+*
+* Convert tab delimited text to HTML table.
+-->
+<html>
+	<head>
+		<meta name="viewport" content="width=device-width">
+		<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+		<title>Text to Table</title>
+		<script type="text/javascript" charset="utf-8" src="../Frameworks/jquery-1.7.2.js"></script>
+	</head>
+	<body>
+		<div id="screen">
+			<div>
+				<textarea id="mytext">
+				</textarea>
+			</div>
+			<div>
+			<input value="Make Table" type="button" onclick="MakeTable()"/>
+			<div>
+			<div>
+				<textarea id="mytable">
+				</textarea>
+			</div>
+		</div>
+		<script type="text/javascript">
+		function MakeTable()
+		{
+			var tx = $("#mytext").val().trim();
+			var rows = tx.split("\n");
+			var table = "<table>\n";
+			for (var row = 0; row < rows.length; ++row)
+			{
+				table += "  <tr>\n";
+				var cells = rows[row].split("\t");
+				for (var cell = 0; cell < cells.length; ++cell)
+				{
+					table += "    <td>" + cells[cell] + "</td>\n";
+				}
+				table += "  </tr>\n";
+			}
+			table += "</table>\n";
+			$("#mytable").text(table);
+		}
+		</script>
+	</body>
+</html>
