@@ -63,27 +63,37 @@ Here follows the results on tested sample devices. Test results are in milliseco
 
 ### HTC Wildfire S, Android 2.3.3
 
-![Results HTC Wildfire S One](https://raw.github.com/divineprog/MoSyncApps/master/JSFrameworkBenchmark/Results/DiagramHTCWildfireS.png)
+![Results HTC Wildfire S](https://raw.github.com/divineprog/MoSyncApps/master/JSFrameworkBenchmark/Results/DiagramHTCWildfireS.png)
 
 ### HTC One, Android 4.0.3
 
-![Results HTC One One](https://raw.github.com/divineprog/MoSyncApps/master/JSFrameworkBenchmark/Results/DiagramHTCOne.png)
+![Results HTC One](https://raw.github.com/divineprog/MoSyncApps/master/JSFrameworkBenchmark/Results/DiagramHTCOne.png)
 
 ### Samsung Galaxy SII, Android 4.0.3
 
-![Results Samsung Galaxy SII One](https://raw.github.com/divineprog/MoSyncApps/master/JSFrameworkBenchmark/Results/DiagramSamsungGalaxySII.png)
+![Results Samsung Galaxy SII](https://raw.github.com/divineprog/MoSyncApps/master/JSFrameworkBenchmark/Results/DiagramSamsungGalaxySII.png)
 
 ### iPhone 4S, iOS 5.1
 
-![Results iPhone 4S One](https://raw.github.com/divineprog/MoSyncApps/master/JSFrameworkBenchmark/Results/DiagramIPhone4S.png)
+![Results iPhone 4S](https://raw.github.com/divineprog/MoSyncApps/master/JSFrameworkBenchmark/Results/DiagramIPhone4S.png)
+
+### iPad 3, iOS 5.1
+
+![Results iPad 3](https://raw.github.com/divineprog/MoSyncApps/master/JSFrameworkBenchmark/Results/DiagramIPad3.png)
+
+### iPad 2, iOS 4.3.5
+
+![Results iPad 2](https://raw.github.com/divineprog/MoSyncApps/master/JSFrameworkBenchmark/Results/DiagramIPad2.png)
 
 ## Discussion
 
 Results show that jqMobi outperforms the other libraries, being much faster than both jQuery and Zepto for DOM operations, and loading slightly faster. jQuery is in general faster for DOM operations than Zepto, but for some operations Zepto performs better. Zepto loads slightly faster than jQuery.
 
-We also did some tests using the non-minified versions of the libraries, and the results show that while loading time is marginally slower, the performance is equal to the minified versions.
+One interesting result is that on iPad 2, Zepto is about two seconds slower for the Create DOM test, but with jqMobi, performance is about equal on the two devices. This indicates that jqMobi manages to get good performance out of iPad 2 (another way to put it is that jqMobi fails to get increased performance on iPad 3 ;-)
 
 Page loading time on iOS is faster when relaunching the app, because of the way iOS caches pages. For example, in our test on iPhone 4S, jqMobi loaded in 843 ms on first app start, and next time loaded in 399 ms. All libraries loaded in roughly this time span. Note that the diagrams show the average of first and second load time.
+
+We also did some tests using the non-minified versions of the libraries, and the results show that while loading time is marginally slower, the performance is equal to the minified versions. Thus, for an app that bundles files with the application package, it does not seem to be any performance gain in using a minified library.
 
 Depending of the characteristics of your application, the performance of DOM operations may not be very critical. However, if your app contains of a large number of DOM elements, the choice of library can have a big impact of performance.
 
