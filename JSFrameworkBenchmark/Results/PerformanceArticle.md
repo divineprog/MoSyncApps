@@ -9,7 +9,7 @@ In this article we compare the performance of three JavaScript frameworks, the p
 
 The benefits of [jQuery](http://jquery.com/) include:
 
-* cross-browser compatibility (jQuery abracts away browser differences) 
+* cross-browser compatibility (jQuery abstracts away browser differences) 
 * high-level syntax (compact notation using the $ function and chained function calls)
 * the jQuery API is widely known among web developers
 
@@ -23,19 +23,23 @@ The question is, how do the new jQuery flavoured libraries perform? Are they any
 
 ## Benchmark app
 
-[JSFrameworkBenchmark](https://github.com/divineprog/MoSyncApps/tree/master/JSFrameworkBenchmark) is the test app we used to benchmark the libraries. It is a web-based native app, built using [MoSync](http://mosync.com). We ran the app on Android, iOS and WindowsPhone. See below for the results.
+[JSFrameworkBenchmark](https://github.com/divineprog/MoSyncApps/tree/master/JSFrameworkBenchmark) is the test app we used to benchmark the libraries. This is a web-based native app, built using the cross-platform development tool [MoSync](http://mosync.com). The app runs without any modifications on Android, iOS and WindowsPhone, with the exception of Zepto, which is not designed to work with Windows Phone/Internet Explorer.
 
 A typical scenario when developing a mobile application is to use web-based technologies to code the app, then package the app as a native app. Commonly, files are bundled with the application, rather than downloaded over the Internet. This means that download time is not an issue, but file size could still have an impact on loading time if library files are big.
 
-The app has a Web UI (a WebWidget browser component) that runs on top of a thin layer of C++. The C++ layer contains code that measures startup time and page load time. The WebWidget contains JavaScript code that does DOM manipulation benchmarks.
+The app has a Web UI (a WebWidget browser component) that runs on top of a thin layer of C++. The C++ layer contains code that measures startup time and page load time. The WebWidget contains JavaScript code that does DOM manipulation benchmarks. Check out the [GitHub repository](https://github.com/divineprog/MoSyncApps/tree/master/JSFrameworkBenchmark) for the source code.
 
-When started, the application automatically starts running tests. When completed, the results are displayed, as shown in this sample screenshot:
+When started, the application automatically starts running tests. When completed, the results are displayed on the screen.
 
-![Screenshot](https://raw.github.com/divineprog/MoSyncApps/master/JSFrameworkBenchmark/Results/Screenshot.png)
-
-The application uses the same source code for each library. When making a build, for say jQuery, we copy and paste the jquery-1.7.2.min.js file from the Frameworks folder into the LocalFiles folder (and delete any previously used library file), then change the script tag to include the library file. Then we build for the desired target platform. That is all there is to it.
+The application uses the same source code for each library. We did not need to make any modifications to the application source code when switching between libraries. Library compatibility was 100% for our test app. When making a build, for say jQuery, we copy and paste the jquery-1.7.2.min.js file from the Frameworks folder into the LocalFiles folder (and delete any previously used library file), then change the script tag to include the library file. Then we build for the desired target platform. That is all there is to it.
 
 ## Test results
+
+The platforms tested include:
+
+* Android (various devices and versions)
+* iOS (iPhone, iPad)
+* Windows Phone 7.5
 
 We used the following versions of the libraries:
 
@@ -43,7 +47,7 @@ We used the following versions of the libraries:
 * Zepto 1.0rc1 minified
 * jqMobi 1.03 minified
 
-The app tests the following:
+The benchmarking app tests the following:
 
 * Page loading time
 * Performance of DOM manipulation:
@@ -55,7 +59,11 @@ For each type of DOM operation, the app makes 5000 iterations. The number of mil
 
 With each library and device, we ran the app once, then killed it and ran it again. The mean values are displayed in the diagrams below. (We also did some extra runs to verify that the result was not off range due to GC or other ongoing processes).
 
-Here follows the results on tested sample devices. Test results are in milliseconds. Smaller values are better.
+This photo shows some of the devices tested running the benchmarking application:
+
+![Some devices tested](https://raw.github.com/divineprog/MoSyncApps/master/JSFrameworkBenchmark/Results/SomeDevicesTested.png)
+
+Here follows the results for each device tested. Test results are in milliseconds. Smaller values are better.
 
 ### Google Nexus One, Android 2.3.6
 
@@ -85,20 +93,31 @@ Here follows the results on tested sample devices. Test results are in milliseco
 
 ![Results iPad 2](https://raw.github.com/divineprog/MoSyncApps/master/JSFrameworkBenchmark/Results/DiagramIPad2.png)
 
+### HTC Titan x310e, Windows Phone 7.5
+
+![Results HTC Titan x310e](https://raw.github.com/divineprog/MoSyncApps/master/JSFrameworkBenchmark/Results/DiagramHTCTitanx310e.png)
+
+(Note: Zepto does not work on Windows Phone)
+
+### Nokia Lumia 800, Windows Phone 7.5
+
+![Results Nokia Lumia 800](https://raw.github.com/divineprog/MoSyncApps/master/JSFrameworkBenchmark/Results/DiagramNokiaLumia800.png)
+
+(Note: Zepto does not work on Windows Phone)
+
 ## Discussion
 
 Results show that jqMobi outperforms the other libraries, being much faster than both jQuery and Zepto for DOM operations, and loading slightly faster. jQuery is in general faster for DOM operations than Zepto, but for some operations Zepto performs better. Zepto loads slightly faster than jQuery.
 
 One interesting result is that on iPad 2, Zepto is about two seconds slower for the Create DOM test, but with jqMobi, performance is about equal on the two devices. This indicates that jqMobi manages to get good performance out of iPad 2 (another way to put it is that jqMobi fails to get increased performance on iPad 3 ;-)
 
-Page loading time on iOS is faster when relaunching the app, because of the way iOS caches pages. For example, in our test on iPhone 4S, jqMobi loaded in 843 ms on first app start, and next time loaded in 399 ms. All libraries loaded in roughly this time span. Note that the diagrams show the average of first and second load time.
+Page loading time on iOS is faster when relaunching the app, because of the way iOS caches pages. For example, in our test on iPhone 4S, jqMobi loaded in 843 ms on first app start, and next time it loaded in 399 ms. Note that the diagrams show the average of first and second load time. The same observation was made on Windows Phone, second page load was up to twice as fast as the first one. On all Android devices tested, page load time did not vary significantly between launches.
 
 We also did some tests using the non-minified versions of the libraries, and the results show that while loading time is marginally slower, the performance is equal to the minified versions. Thus, for an app that bundles files with the application package, it does not seem to be any performance gain in using a minified library.
 
-Depending of the characteristics of your application, the performance of DOM operations may not be very critical. However, if your app contains of a large number of DOM elements, the choice of library can have a big impact of performance.
+For DOM operations, Windows Phone devices are considerably slower than Android and iOS devices. In the Create DOM test, the performance difference is substantial, and the Windows Phone devices tested are outperformed by for instance Google Nexus One, launched in January 2010, and a low-end device like HTC Wildfire S. This indicates that Internet Explorer performance has room for improvement to catch up with the WebKit-based browsers used on Android and iOS.
 
-
-
+Depending of the characteristics of your application, the performance of DOM operations may not be very critical. However, if your app contains of a large number of DOM elements, the choice of library can have a big impact of performance. 
 
 
 

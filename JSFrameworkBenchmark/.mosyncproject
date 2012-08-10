@@ -20,5 +20,6 @@
 <property key="com.mobilesorcery.sdk.html5.support" value="true"/>
 <property key="profile.mgr.type" value="0"/>
 <property key="template.id" value="project.wormhole.web"/>
+<property key="winmobilecs:guid" value="a9bd2720-c455-102f-80c5-4ff02d9a251a"/>
 </properties>
 </project>
