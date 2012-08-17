@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<!--
+* @file index.html
+* @author Ali Sarrafi
+*
+* Template application that includes librares to access device servies
+* from JavaScript.
+-->
+<html>
+	<head>
+		<meta name="viewport" content="width=320, user-scalable=yes">
+		<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+		<title>WebSQL Demo</title>
+		<link rel="stylesheet" href="style.css" type="text/css" media="screen" title="no title" charset="utf-8">
+		<script type="text/javascript" charset="utf-8" src="database.js"></script>
+		<script type="text/javascript">
+		/**
+		 * Create the application object.
+		 */
+		var app = function()
+		{
+			var app = {};
+
+			var db = database("GameDB");
+			
+			(function()
+			{
+				// If we fail to read from the player table, we create it.
+				db.execSQL("SELECT * FROM player", [], 
+					null,
+					function(error)
+					{
+						db.execSQL("DROP TABLE IF EXISTS player");
+						db.execSQL("CREATE TABLE player (name, score)");
+						db.execSQL("INSERT INTO player VALUES (?, ?)", ["Me", 0]);
+						db.execSQL("INSERT INTO player VALUES (?, ?)", ["You", 0]);
+					});
+			})();
+
+			function incrementPlayer(name, points)
+			{
+				db.execSQL("SELECT score FROM player WHERE name=?", [name],
+					function(result)
+					{
+						var row = result.rows.item(0);
+						var score = row.score + points;
+						if (points > 1) { score = score * 2; }
+						db.execSQL("UPDATE player SET score=? WHERE name=?", [score, name]);
+					});
+			}
+
+			function getScore(name, fun)
+			{
+				db.execSQL("SELECT score FROM player WHERE name=?", [name],
+					function(result)
+					{
+						var row = result.rows.item(0);
+						fun(row.score);
+					});
+			}
+
+			function rollWheel()
+			{
+				return 1 + Math.floor(Math.random() * 51);
+			}
+			
+			function status(text)
+			{
+				document.getElementById("gameStatus").innerHTML = text;
+			}
+			
+			app.displayScore = function()
+			{
+				getScore("Me", function(score) {
+					document.getElementById("myScore").innerHTML = score; });
+				getScore("You", function(score) {
+					document.getElementById("yourScore").innerHTML = score; });
+			};
+
+			function playOneTurn(factor)
+			{
+				var delay = 1000;
+				var myScore = 0;
+				var yourScore = 0;
+				
+				status("I roll the wheel...");
+				setTimeout(function() {
+					var myScore = rollWheel() * factor;
+					status("I got " + myScore);
+					setTimeout(function() {
+						status("You roll the wheel...");
+						setTimeout(function() {
+							var yourScore = rollWheel();
+							status("You got " + yourScore);
+							setTimeout(function() {
+								if (myScore > yourScore)
+								{
+									status("I win!");
+									incrementPlayer("Me", 1);
+								}
+								else
+								{
+									status("You win!");
+									incrementPlayer("You", factor);
+								}
+								setTimeout(function() {
+									app.displayScore();
+								},
+								delay);
+							},
+							delay);
+						},
+						delay);
+					},
+					delay);
+				},
+				delay);
+			};
+			
+			app.playLowRisk = function()
+			{
+				playOneTurn(1);
+			};
+			
+			app.playHighRisk = function()
+			{
+				playOneTurn(2);
+			};
+
+			app.resetScore = function()
+			{
+				db.execSQL("UPDATE player SET score=0 WHERE name=?", ["You"],
+					function() { app.displayScore(); });
+				db.execSQL("UPDATE player SET score=0 WHERE name=?", ["Me"],
+					function() { app.displayScore(); });
+			};
+			
+			return app;
+		}();
+
+		/**
+		 * Initialization.
+		 */
+		function initialize()
+		{
+			// Closes the application when the back key is pressed.
+			document.addEventListener(
+				"backbutton",
+				function()
+				{
+					mosync.bridge.send(["close"]);
+				}, 
+				true);
+			
+			app.displayScore();
+		}
+		
+		// Set the page load function.
+		window.onload = initialize;
+		</script>
+	</head>
+	<body>
+		<div id="screen">
+			<div class="pane" id="heading">Play Me!</div>
+			<div class="pane button" onclick="app.playLowRisk();">Play Low Risk</div>
+			<div class="pane button" onclick="app.playHighRisk();">Play High Risk</div>
+			<div class="pane" id="info">
+				<div class="infoItem"><span id="gameStatus">Touch button to play</span></div>
+				<div class="infoItem">Your score: <span id="yourScore">&nbsp;</span></div>
+				<div class="infoItem">My score: <span id="myScore">&nbsp;</span></div>
+			</div>
+			<div class="pane" id="info">
+				<div class="infoItem">
+				Rules are simple! Beat me if you can! If you pick low risk we play at equal terms, 
+				at high risk you can gain more, but you have a higher chance of loosing!
+				</div>
+			</div>
+			<div class="pane button" onclick="app.resetScore();">Reset Score</div>
+		</div>
+		<div></div>
+	</body>
+</html>
