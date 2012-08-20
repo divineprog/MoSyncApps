@@ -1,3 +1,13 @@
+/*
+* @file database.js
+* @author Mikael Kindborg
+*
+* A very lightweight database wrapper library for Web SQL.
+*
+* Note that the execSQL is added directly to Web SQL's
+* Database object.
+*/
+
 /**
  * Object that wraps database functions.
  */
@@ -48,7 +58,7 @@ var database = function(name)
 			errorFun = function(error)
 			{
 				// TODO: Uncomment if you want error messages.
-				//alert("DB Error: " + error.message);
+				//alert("Query Error: " + error.message);
 			};
 		}
 

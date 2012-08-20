@@ -1,17 +1,22 @@
 <!DOCTYPE html>
 <!--
 * @file index.html
-* @author Ali Sarrafi
+* @author Mikael Kindborg
 *
-* Template application that includes librares to access device servies
-* from JavaScript.
+* Demo application that shows how to use Web SQL in a MoSync application.
+* The code uses a simple database library that wraps the Web SQL API
+* (database.js).
+*
+* Shorter examples are found in files example1.js (shows how to use the
+* Web SQL API directly) and example2.js (shows how to use the database.js API).
 -->
 <html>
 	<head>
 		<meta name="viewport" content="width=320, user-scalable=yes">
 		<meta http-equiv="Content-type" content="text/html; charset=utf-8">
-		<title>WebSQL Demo</title>
+		<title>Web SQL Demo</title>
 		<link rel="stylesheet" href="style.css" type="text/css" media="screen" title="no title" charset="utf-8">
+		<script type="text/javascript" charset="utf-8" src="js/wormhole.js"></script>
 		<script type="text/javascript" charset="utf-8" src="database.js"></script>
 		<script type="text/javascript">
 		/**
@@ -43,8 +48,17 @@
 					function(result)
 					{
 						var row = result.rows.item(0);
-						var score = row.score + points;
-						if (points > 1) { score = score * 2; }
+						var score = row.score;
+						if (points > 1)
+						{
+							// For points above 1 we duble the score.
+							score = score * 2;
+						}
+						else
+						{
+							// Otherwise we just att to the score.
+							score = score + points;
+						}
 						db.execSQL("UPDATE player SET score=? WHERE name=?", [score, name]);
 					});
 			}
@@ -105,6 +119,10 @@
 								}
 								setTimeout(function() {
 									app.displayScore();
+									setTimeout(function() {
+										status("Touch a button to play again!");
+									},
+									delay);
 								},
 								delay);
 							},
@@ -165,14 +183,15 @@
 			<div class="pane button" onclick="app.playLowRisk();">Play Low Risk</div>
 			<div class="pane button" onclick="app.playHighRisk();">Play High Risk</div>
 			<div class="pane" id="info">
-				<div class="infoItem"><span id="gameStatus">Touch button to play</span></div>
+				<div class="infoItem"><span id="gameStatus">Touch a button to play!</span></div>
 				<div class="infoItem">Your score: <span id="yourScore">&nbsp;</span></div>
 				<div class="infoItem">My score: <span id="myScore">&nbsp;</span></div>
 			</div>
 			<div class="pane" id="info">
 				<div class="infoItem">
 				Rules are simple! Beat me if you can! If you pick low risk we play at equal terms, 
-				at high risk you can gain more, but you have a higher chance of loosing!
+				at high risk you can gain more, but you stand a higher chance of loosing!
+				Can you beat me in 10 turns? Can you endure 100 turns?
 				</div>
 			</div>
 			<div class="pane button" onclick="app.resetScore();">Reset Score</div>
