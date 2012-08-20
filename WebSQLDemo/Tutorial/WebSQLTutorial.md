@@ -1,5 +1,5 @@
 <!-- # Using Web SQL in MoSync Apps  -->
-<!-- C:\md>perl Markdown.pl C:\MoSyncProjects\MoSyncApps\WebSQLDemo\WebSQLTutorial.md > output.txt -->
+<!-- C:\md>perl Markdown.pl C:\MoSyncProjects\MoSyncApps\WebSQLDemo\Tutorial\WebSQLTutorial.md > output.txt -->
 
 <!--
 <style type="text/css">
@@ -36,7 +36,7 @@ Parameters are:
 * database display name
 * database size
 
-Use the transaction() function in the database object to excute queries, and execute the actual queries using the executeSql() function in the [SQLTransaction](http://www.mosync.com/files/imports/doxygen/latest/html5/sqltransaction.md.html#SQLTransaction) object:
+Use the transaction() function in the database object to execute queries, and execute the actual queries using the executeSql() function in the [SQLTransaction](http://www.mosync.com/files/imports/doxygen/latest/html5/sqltransaction.md.html#SQLTransaction) object:
 
     db.transaction(
         function(tx)
@@ -61,7 +61,7 @@ Use the transaction() function in the database object to excute queries, and exe
             console.log("Transaction Success"); }
     );
 
-The executeSql function takes up to four parameters:
+The executeSql() function takes up to four parameters:
 
 * query string (mandatory)
 * query parameter array (optional)
@@ -70,7 +70,7 @@ The executeSql function takes up to four parameters:
 
 A nice thing with the Web SQL API is that it encourages the use of query parameters. It is very easy to supply parameters in the query parameter array.
 
-The transaction function takes up to three parameters:
+The transaction() function takes up to three parameters:
 
 * transaction function, execute queries in this function (mandatory)
 * transaction error function (optional)
@@ -105,7 +105,7 @@ File [example2.js](https://github.com/divineprog/MoSyncApps/blob/master/WebSQLDe
 
 Note that in example1.js, the transaction success function runs the code in example2.js. This makes the two examples run sequentially.
 
-You can run both examples, e.g. in Chrome, by opening the file [example.html](https://github.com/divineprog/MoSyncApps/blob/master/WebSQLDemo/LocalFiles/example.html). Inspect the console log in Chrome to see the output.
+You can run both examples, e.g. in Chrome, by opening the file [example.html](https://github.com/divineprog/MoSyncApps/blob/master/WebSQLDemo/LocalFiles/example.html). Inspect the console log in Chrome to see the output. (Note that WebSQL is not available in Firefox or Internet Explorer.)
 
 One thing that is of interest is how retrieving the result of SELECT COUNT(\*) works in Web SQL. The result is returned as a row, and the name of the field that contains the row count is called "COUNT(\*)". See the example code for how this is used.
 
@@ -121,7 +121,7 @@ This is a screenshot of the app:
 
 The source code is available on GitHub. The main entry point of the program is file [index.html](https://github.com/divineprog/MoSyncApps/blob/master/WebSQLDemo/LocalFiles/index.html). The app uses the database.js wrapper library discussed above.
 
-The database is used to store the total score of the two players (the user and the app). This makes the score persistent. While not a big database with lots of objects, it shows how to perform basic databse operations, like querying and updating rows.
+The database is used to store the total score of the two players (the user and the app). This makes the score persistent. While not a big database with lots of objects, it shows how to perform basic database operations, like querying and updating rows.
 
 ## Alternative database techniques
 
