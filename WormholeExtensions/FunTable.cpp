@@ -24,29 +24,30 @@ MA 02110-1301, USA.
  * messages from Wormhole (JavaScript).
  */
 
-template <typename T>
-FunTable<T>::FunTable()
+#include "FunTable.h"
+
+namespace Wormhole
+{
+
+FunTable::FunTable()
 {
 }
 
-template <typename T>
-FunTable<T>::~FunTable()
+FunTable::~FunTable()
 {
 }
 
-template <typename T>
-void FunTable<T>::addMessageFun(
+void FunTable::addMessageFun(
 	const char* command,
 	MessageHandlerFun fun)
 {
 	mFunMap[command] = fun;
 }
 
-template <typename T>
-void FunTable<T>::callMessageFun(
+void FunTable::callMessageFun(
 	const char* command,
 	Wormhole::MessageStream& stream,
-	T* object)
+	FunObject* object)
 {
 	if (mFunMap.find(command) != mFunMap.end())
 	{
@@ -60,3 +61,6 @@ void FunTable<T>::callMessageFun(
 		maWriteLog(command, strlen(command));
 	}
 }
+
+} // namespace
+

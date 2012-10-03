@@ -35,7 +35,9 @@ MA 02110-1301, USA.
 namespace Wormhole
 {
 
-class CustomWebAppMoblet : public WebAppMoblet
+class CustomWebAppMoblet :
+	public WebAppMoblet,
+	public FunObject
 {
 public:
 	/**
@@ -74,7 +76,7 @@ public:
 	 */
 	void addMessageFun(
 		const char* command,
-		Wormhole::FunTable<Wormhole::WebAppMoblet>::MessageHandlerFun fun);
+		Wormhole::FunTable::MessageHandlerFun fun);
 
 	/**
 	 * This method handles messages sent from the WebView.

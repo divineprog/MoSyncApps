@@ -43,6 +43,9 @@ MA 02110-1301, USA.
 
 namespace Wormhole
 {
+
+class CustomWebAppMoblet;
+
 /**
  * Handler for Wormhole messages of type "Custom".
  */
@@ -54,23 +57,23 @@ public:
 
 	void init(
 		MAHandle beepSound,
-		Wormhole::WebAppMoblet* moblet);
+		Wormhole::CustomWebAppMoblet* moblet);
 
 	void addMessageFun(
 		const char* command,
-		Wormhole::FunTable<Wormhole::WebAppMoblet>::MessageHandlerFun fun);
+		Wormhole::FunTable::MessageHandlerFun fun);
 
 	void callMessageFun(
 		const char* command,
 		Wormhole::MessageStream& stream,
-		Wormhole::WebAppMoblet* moblet);
+		Wormhole::CustomWebAppMoblet* moblet);
 
 	void keyPressEvent(int keyCode, int nativeCode);
 
 	void handleWebViewMessage(
 		NativeUI::WebView* webView,
 		MAHandle data,
-		Wormhole::WebAppMoblet* moblet);
+		Wormhole::CustomWebAppMoblet* moblet);
 
 	void handleMessageStreamJSON(
 		NativeUI::WebView* webView,
@@ -79,7 +82,7 @@ public:
 	void handleMessageStream(
 		NativeUI::WebView* webView,
 		MAHandle data,
-		Wormhole::WebAppMoblet* moblet);
+		Wormhole::CustomWebAppMoblet* moblet);
 
 private:
 	/**
@@ -101,7 +104,7 @@ private:
 	 * Dictionary with pointers to message handler functions.
 	 * command -> fun
 	 */
-	Wormhole::FunTable<Wormhole::WebAppMoblet> mFunTable;
+	Wormhole::FunTable mFunTable;
 };
 
 } // namespace

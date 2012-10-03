@@ -56,7 +56,7 @@ void CustomWebAppMoblet::init(MAHandle beepSoundResource)
 
 void CustomWebAppMoblet::addMessageFun(
 	const char* command,
-	FunTable<WebAppMoblet>::MessageHandlerFun fun)
+	FunTable::MessageHandlerFun fun)
 {
 	mMessageHandler.addMessageFun(command, fun);
 }

@@ -25,6 +25,7 @@ MA 02110-1301, USA.
  */
 
 #include "MessageHandler.h"
+#include "CustomWebAppMoblet.h"
 
 namespace Wormhole
 {
@@ -55,7 +56,7 @@ MessageHandler::~MessageHandler()
 	}
 }
 
-void MessageHandler::init(MAHandle beepSound, Wormhole::WebAppMoblet* moblet)
+void MessageHandler::init(MAHandle beepSound, Wormhole::CustomWebAppMoblet* moblet)
 {
 	NativeUI::WebView* webView = moblet->getWebView();
 	mPhoneGapMessageHandler = new PhoneGapMessageHandler(webView);
@@ -83,7 +84,7 @@ void MessageHandler::init(MAHandle beepSound, Wormhole::WebAppMoblet* moblet)
 
 void MessageHandler::addMessageFun(
 	const char* command,
-	FunTable<WebAppMoblet>::MessageHandlerFun fun)
+	FunTable::MessageHandlerFun fun)
 {
 	mFunTable.addMessageFun(command, fun);
 }
@@ -91,7 +92,7 @@ void MessageHandler::addMessageFun(
 void MessageHandler::callMessageFun(
 	const char* command,
 	Wormhole::MessageStream& stream,
-	Wormhole::WebAppMoblet* moblet)
+	Wormhole::CustomWebAppMoblet* moblet)
 {
 	mFunTable.callMessageFun(command, stream, moblet);
 }
@@ -115,7 +116,7 @@ void MessageHandler::keyPressEvent(int keyCode, int nativeCode)
 void MessageHandler::handleWebViewMessage(
 	NativeUI::WebView* webView,
 	MAHandle data,
-	Wormhole::WebAppMoblet* moblet)
+	Wormhole::CustomWebAppMoblet* moblet)
 {
 	// Check the message protocol.
 	Wormhole::MessageProtocol protocol(data);
@@ -166,7 +167,7 @@ void MessageHandler::handleMessageStreamJSON(
 void MessageHandler::handleMessageStream(
 	NativeUI::WebView* webView,
 	MAHandle data,
-	Wormhole::WebAppMoblet* moblet)
+	Wormhole::CustomWebAppMoblet* moblet)
 {
 	// Create a message stream object. This parses the message data.
 	// The message object contains one or more strings.

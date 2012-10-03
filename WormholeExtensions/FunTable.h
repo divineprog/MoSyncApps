@@ -43,16 +43,22 @@ namespace Wormhole
 {
 
 /**
+ * Abstract superclass for classes that has method
+ */
+class FunObject
+{
+};
+
+/**
  * Handler for Wormhole messages of type "Custom".
  */
-template <typename T>
 class FunTable
 {
 public:
 	/**
 	 * Message handling function type.
 	 */
-	typedef void (T::*MessageHandlerFun)
+	typedef void (FunObject::*MessageHandlerFun)
 		(Wormhole::MessageStream& stream);
 
 	FunTable();
@@ -66,7 +72,7 @@ public:
 	void callMessageFun(
 		const char* command,
 		Wormhole::MessageStream& stream,
-		T* object);
+		FunObject* object);
 
 private:
 	/**
@@ -75,8 +81,6 @@ private:
 	 */
 	MAUtil::HashMap<MAUtil::String, MessageHandlerFun> mFunMap;
 };
-
-#include "FunTable.inl"
 
 } // namespace
 
