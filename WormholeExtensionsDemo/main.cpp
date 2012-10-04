@@ -41,16 +41,31 @@ class MyMoblet : public CustomWebAppMoblet
 public:
 	MyMoblet()
 	{
-		init(BEEP_WAV);
+		// Show the start page. This will also perform initialization if needed.
+		showPage("index.html");
+
+		// TODO: Call from JavaScript last in index.html, or last in wormhole.js ?
+		// Have written code in MessageHandler.cpp to call initializePhoneGap().
+		// Problem with having it here may be that PhoneGap is not loaded
+		// when initializePhoneGap() is called (is this possible?).
+		//initializePhoneGap(this);
+
+		// The beep sound is defined in file "Resources/Resources.lst".
+		// Note: This used by the PhoneGap beep notification API.
+		// Below we add our own beep message, to illustrate how to
+		// invoke custom C++ code from JavaScript. Do not confuse these
+		// two ways of playing a beep sound, they are completely unrelated.
+		setBeepSound(BEEP_WAV);
 
 		// Register functions to handle custom messages sent from JavaScript.
 		addMessageFun(
 			"Vibrate",
 			(FunTable::MessageHandlerFun)&MyMoblet::vibrate);
 
-		// The page in the "LocalFiles" folder to
-		// show when the application starts.
-		showPage("index.html");
+		// Register functions to handle custom messages sent from JavaScript.
+		addMessageFun(
+			"Beep",
+			(FunTable::MessageHandlerFun)&MyMoblet::beep);
 	}
 
 	virtual ~MyMoblet()
@@ -58,9 +73,16 @@ public:
 		// Add cleanup code as needed.
 	}
 
-	void vibrate(Wormhole::MessageStream& stream)
+	void vibrate(Wormhole::MessageStream& message)
 	{
-		maVibrate(500);
+		int duration = MAUtil::stringToInteger(message.getNext());
+		maVibrate(duration);
+	}
+
+	void beep(Wormhole::MessageStream& message)
+	{
+		// This is how to play a sound using MoSync API.
+		maSoundPlay(BEEP_WAV, 0, maGetDataSize(BEEP_WAV));
 	}
 };
 

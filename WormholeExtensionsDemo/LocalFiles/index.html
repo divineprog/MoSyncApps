@@ -19,16 +19,15 @@
 			function initialize()
 			{
 				document.addEventListener("deviceready", displayDeviceInfo, true);
-				document.addEventListener("backbutton", close, true);
-			}
-
-			/**
-			 * Handle the backbutton event.
-			 */
-			function close()
-			{
-				// Close the application if the back key is pressed.
-				mosync.bridge.send(["close"]);
+				
+				// Close the application when the back key is pressed.
+				document.addEventListener(
+					"backbutton", 
+					function()
+					{
+						mosync.bridge.send(["ExitApplication"]);
+					}, 
+					true);
 			}
 
 			/**
@@ -50,7 +49,8 @@
 			function vibrate()
 			{
 				//navigator.notification.vibrate(1000);
-				mosync.bridge.send(["Custom", "Vibrate"]);
+				
+				mosync.bridge.send(["Custom", "Vibrate", "500"]);
 			}
 
 			/**
@@ -58,10 +58,11 @@
 			 */
 			function beep()
 			{
+				//navigator.notification.beep(1);
+				
 				// Send message to C++ to make device beep.
 				// Here we used the string stream format.
-				//mosync.bridge.send(["Custom", "Beep"]);
-				navigator.notification.beep(1);
+				mosync.bridge.send(["Custom", "Beep"]);
 			}
 
 			/**
@@ -92,5 +93,8 @@
 			<div class="pane button" onclick="beep();">Beep</div>
 			<div class="pane button" onclick="changeColor();">Change Color</div>
 		</div>
+	<script type="text/javascript">
+		mosync.bridge.send(["InitializePhoneGap"]);
+	</script>
 	</body>
 </html>

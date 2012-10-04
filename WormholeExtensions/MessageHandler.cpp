@@ -56,13 +56,16 @@ MessageHandler::~MessageHandler()
 	}
 }
 
-void MessageHandler::init(MAHandle beepSound, Wormhole::CustomWebAppMoblet* moblet)
+void MessageHandler::initialize(Wormhole::CustomWebAppMoblet* moblet)
 {
 	NativeUI::WebView* webView = moblet->getWebView();
 	mPhoneGapMessageHandler = new PhoneGapMessageHandler(webView);
 	mNativeUIMessageHandler = new NativeUIMessageHandler(webView);
 	mResourceMessageHandler = new ResourceMessageHandler(webView);
+}
 
+void MessageHandler::initializePhoneGap(Wormhole::CustomWebAppMoblet* moblet)
+{
 	// Send the Device Screen size to JavaScript.
 	MAExtent scrSize = maGetScrSize();
 	int width = EXTENT_X(scrSize);
@@ -75,11 +78,14 @@ void MessageHandler::init(MAHandle beepSound, Wormhole::CustomWebAppMoblet* mobl
 		height);
 	moblet->callJS(buf);
 
-	// Set beep sound resource.
-	mPhoneGapMessageHandler->setBeepSound(beepSound);
-
 	// Initialize PhoneGap.
 	mPhoneGapMessageHandler->initializePhoneGap();
+}
+
+void MessageHandler::setBeepSound(MAHandle beepSound)
+{
+	// Set beep sound resource.
+	mPhoneGapMessageHandler->setBeepSound(beepSound);
 }
 
 void MessageHandler::addMessageFun(
@@ -189,11 +195,6 @@ void MessageHandler::handleMessageStream(
 			//Forward Resource messages to the respective message handler
 			mResourceMessageHandler->handleMessage(stream);
 		}
-		else if (0 == strcmp(p, "close"))
-		{
-			// Close the application (calls method in class Moblet).
-			moblet->close();
-		}
 		else if (0 == strcmp(p, "Custom"))
 		{
 			// Lookup and call function to handle custom message.
@@ -205,6 +206,15 @@ void MessageHandler::handleMessageStream(
 					stream,
 					moblet);
 			}
+		}
+		else if (0 == strcmp(p, "ExitApplication"))
+		{
+			// Close the application (calls method in class Moblet).
+			moblet->close();
+		}
+		else if (0 == strcmp(p, "InitializePhoneGap"))
+		{
+			moblet->initializePhoneGap(moblet);
 		}
 	}
 }

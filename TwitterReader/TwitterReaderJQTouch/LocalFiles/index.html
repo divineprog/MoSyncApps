@@ -1,96 +1,384 @@
 <!DOCTYPE html>
-<!--
-* @file index.html
-* @author Ali Sarrafi
-*
-* Template application that shows how to send custom messages to C++.
--->
+
 <html>
 	<head>
 		<meta name="viewport" content="width=320, user-scalable=no">
-		<meta http-equiv="Content-type" content="text/html; charset=utf-8">
-		<title>Wormhole Template App</title>
-		<link rel="stylesheet" href="style.css" type="text/css" media="screen" title="no title" charset="utf-8">
-		<script type="text/javascript" charset="utf-8" src="js/wormhole.js"></script>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>Tweet Reader</title>
+
+		<!-- import JQTouch -->
+		<script src="js/jqtouch/jqtouch.min.js" type="application/x-javascript" charset="utf-8"></script>
+
+		<!-- Import JQTouch default style (iPhone look). Replace the string "themes/default" with "themes/jqt" for a neutral (black) theme -->
+		<link type="text/css" rel="stylesheet" media="screen" href="js/jqtouch/jqtouch.css">
+		<link type="text/css" rel="stylesheet" media="screen" href="js/themes/apple/theme.css">
+
+		<!-- include JQuery through Google API => Always have the latest version -->
+		<script src="js/jqtouch/jquery-1.4.2.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/jqtouch/jqtouch.js" type="application/x-javascript" charset="utf-8"></script>
+
+		<!-- Import the mosync library. -->
+		<script src="js/mosync-bridge.js"></script>
+
+		<!-- Import file extensions. -->
+		<script src="js/mosync-file.js"></script>
+
+		<!-- JavaScript goes here -->
 		<script type="text/javascript">
+			// Fire up JQTouch
+			var jQT = $.jQTouch({
+				statusBar: 'black'
+			});
+
+			jQT.settings.debug = false;
+
+			// We defince the parsed favorites as global functions because
+			// we use them in multiple places.
+			var gParsedFavorites = "";
+
+			// Make sure we get the correct event type on every touch system.
+			var clickEvent = mosync.isIOS ? 'tap' : 'click';
+
 			/**
-			 * Initialization.
+			 * Outputs the received tweets to the user-interface
+			 * @param tweets The tweets as an array. Each element
+			 * represents one tweet and can be accessed via tweets[i].text
+			 */
+			function showTweets(tweets, username)
+			{
+				var tweetsTitle = document.getElementById("tweetsTitle");
+				tweetsTitle.innerHTML = username;
+				var results_ul = document.getElementById("results_ul");
+				// If it is the loading indicator do not parse it.
+				if (tweets == null)
+				{
+					results_ul.innerHTML = "<li>No tweets to display</li>";
+				}
+				else if (tweets == "Loading...")
+				{
+					results_ul.innerHTML = "<li>" + tweets + "</li>";
+				}
+				else
+				{
+					var results = "";
+					if ((tweets.length == 0) || (tweets.error == "Not found"))
+					{
+						results = "<li>No tweets could be found. Please check the username.</li>";
+					}
+					else
+					{
+						for (var i=0; i<tweets.length; i++)
+						{
+							results += "<li>" + tweets[i].text + "</li>";
+						}
+					}
+					results_ul.innerHTML = results;
+				}
+			}
+
+			/**
+			 * Navigates back one page.
+			 */
+			function goBack()
+			{
+				jQT.goBack();
+			}
+
+			/**
+			 * Downloads the Tweets for an specific user.
+			 * @param username the username that should be used
+			 * for downloading.
+			 */
+			function getTweetsForUser(username)
+			{
+				console.log("@@@@ getTweetsForUser 1");
+				showTweets("Loading...", username);
+
+				console.log("@@@@ getTweetsForUser 2");
+				// Prepare the Twitter url, so it can be passed as a GET parameter.
+				var twitterUrl = "http://api.twitter.com/1/statuses/user_timeline.json?screen_name=" + username;
+
+				// Do the ajax call with JSON.
+				$.getJSON(twitterUrl,function(d)
+				{
+					console.log("@@@@ getTweetsForUser 3");
+					showTweets(d, username);
+					console.log("@@@@ getTweetsForUser 3.1");
+				});
+
+				console.log("@@@@ getTweetsForUser 4");
+				jQT.goTo('#tweets');
+				console.log("@@@@ getTweetsForUser 5");
+			}
+
+			/**
+			 * Gets the tweets for the user indicated in the input form.
+			 */
+			function getTweets()
+			{
+				console.log("@@@@ getTweets 1");
+				// Get the username from the input field.
+				var username = document.getElementById("usernameInput").value;
+				console.log("@@@@ getTweets 2");
+				if(username.length == 0)
+				{
+					console.log("@@@@ getTweets 3");
+					showMessage("Invalid username")
+					console.log("@@@@ getTweets 3.1");
+					jQT.goTo('#theform');
+					console.log("@@@@ getTweets 3.2");
+				}
+				else
+				{
+					console.log("@@@@ getTweets 4");
+					getTweetsForUser(username)
+				}
+				console.log("@@@@ getTweets 5");
+			}
+
+			/**
+			 * Read the list of favourite users, then
+			 * call the supplied callback function
+			 * with two parameters, the user data
+			 * and the path to the data file.
+			 */
+			function readFavoriteUsers(callbackFun)
+			{
+				console.log("@@@ readFavoriteUsers");
+
+				// Path to file with user data.
+				var filePath;
+
+				function read(path)
+				{
+					if (null == path)
+					{
+						showMessage("Could not read user list");
+						return;
+					}
+
+					filePath = path + "SavedUsers";
+					mosync.file.read(filePath, handleResult);
+				}
+
+				function handleResult(data)
+				{
+					callbackFun(data, filePath);
+				}
+
+				// Get path to local file directory, then
+				// read favourite users from that directory.
+				mosync.file.getLocalPath(read);
+			}
+
+			/**
+			 * Read and display list of favourite users.
+			 */
+			function readAndDisplayFavoriteUsers()
+			{
+				readFavoriteUsers(displayFavoriteUsers);
+			}
+
+			/**
+			 * This function uses calls to Mosync for accessing files
+			 * and saving favorite users.
+			 */
+			function addFavoriteUser()
+			{
+				console.log("@@@ addFavoriteUser");
+
+				// Get the username from the input field
+				var userName = document.getElementById("usernameInput").value;
+
+				if (userName.length == 0)
+				{
+					showMessage("Invalid username")
+					jQT.goTo('#theform');
+					return;
+				}
+
+				var userList;
+
+				function addUser(userData, filePath)
+				{
+					userList = userData;
+					if (null == userList)
+					{
+						userList = "";
+					}
+
+					// Create a unique string, "!" is not in any
+					// Twitter user name.
+					var separatedUserName = "!" + userName + "!";
+
+					// Add user only if not in string.
+					if (-1 == userList.indexOf(separatedUserName))
+					{
+						userList += separatedUserName;
+					}
+
+					// Write user list.
+					mosync.file.write(filePath, userList, reportResult);
+				}
+
+				function reportResult(success)
+				{
+					if (success)
+					{
+						displayFavoriteUsers(userList);
+						showMessage("User successfully saved");
+					}
+					else
+					{
+						showMessage("Could not save user");
+					}
+				}
+
+				readFavoriteUsers(addUser);
+			}
+
+			function showMessage(message)
+			{
+				// Windows Phone does not support alert, show the message
+				// in the user name field for now.
+				if (mosync.isWindowsPhone)
+				{
+					document.getElementById("usernameInput").value = message;
+				}
+				else
+				{
+					alert(message);
+				}
+			}
+
+			function displayFavoriteUsers(userData)
+			{
+				if (null == userData)
+				{
+					return;
+				}
+
+				gParsedFavoriteUsers = parseFavoriteUsers(userData);
+
+				var favorites_ul = document.getElementById("favorites");
+				var myID = "";
+				favorites_ul.innerHTML = "<li> Favorites: </li>";
+				for (var i = 0; i < gParsedFavoriteUsers.length; i++)
+				{
+
+					myID = "#submitButton" + i;
+					favorites_ul.innerHTML += "<li class='arrow'><a id='submitButton" +
+						i +
+						"')' onclick='getTweetsForUser(\"" +
+						gParsedFavoriteUsers[i] +
+						"\")'>" +
+						gParsedFavoriteUsers[i] +
+						"</a></li>";
+				}
+			}
+
+			/**
+			 * Parse a string with a list of user names.
+			 * Format of userData is "!user1!!user2!!...!!userN!"
+			 */
+			function parseFavoriteUsers(userData)
+			{
+				// Split string into elements, remove empty strings.
+				return userData.split("!").filter(
+					function(x){ return x.length > 0 });
+			}
+
+			/**
+			 * Event-listener. Gets called if the user presses a button
+			 * on his/her keyboard in the input field.
+			 * @param keynum The pressed key (as an ASCii value)
+			 */
+			function keydown(keynum)
+			{
+				console.log("@@@@ keydown: " + keynum);
+				if (keynum == 13)
+				{
+					console.log("@@@@ keydown 2: " + keynum);
+					setTimeout(function () {
+						console.log("@@@@ calling submitButton");
+						$("#submitButton").trigger(clickEvent); 
+					}, 1000);
+				}
+				console.log("@@@@ keydown 3: " + keynum);
+			}
+
+			/**
+			 * Will be called after all the markup in <body> was loaded
 			 */
 			function initialize()
 			{
-				document.addEventListener("deviceready", displayDeviceInfo, true);
-				document.addEventListener("backbutton", close, true);
-			}
+				$("#submitButton").bind(clickEvent, function(e)
+				{
+					console.log("@@@@ calling getTweets");
+					getTweets();
+					console.log("@@@@ done calling getTweets");
+				});
+				$("#favoriteButton").bind(clickEvent, function(e)
+				{
+					addFavoriteUser();
+				});
+				$("#backButton").bind(clickEvent, function(e)
+				{
+					goBack();
+				});
 
-			/**
-			 * Handle the backbutton event.
-			 */
-			function close()
-			{
-				// Close the application if the back key is pressed.
-				mosync.bridge.send(["close"]);
-			}
-
-			/**
-			 * Displays the device information on the screen.
-			 */
-			function displayDeviceInfo()
-			{
-				document.getElementById("platform").innerHTML = device.platform;
-				document.getElementById("version").innerHTML = device.version;
-				document.getElementById("uuid").innerHTML = device.uuid;
-				document.getElementById("name").innerHTML = device.name;
-				document.getElementById("width").innerHTML = screen.width;
-				document.getElementById("height").innerHTML = screen.height;
-			}
-
-			/**
-			 * Vibrate for 1 second.
-			 */
-			function vibrate()
-			{
-				//navigator.notification.vibrate(1000);
-				mosync.bridge.send(["Custom", "Vibrate"]);
-			}
-
-			/**
-			 * Play one beep sound.
-			 */
-			function beep()
-			{
-				// Send message to C++ to make device beep.
-				// Here we used the string stream format.
-				//mosync.bridge.send(["Custom", "Beep"]);
-				navigator.notification.beep(1);
-			}
-
-			/**
-			 * Change page background to random color.
-			 */
-			function changeColor()
-			{
-				var color = "#" +
-					(Math.random() * 0xFFFFFF + 0x1000000)
-						.toString(16).substr(1,6);
-				document.documentElement.style.backgroundColor = color;
-				document.body.style.backgroundColor = color;
+				readAndDisplayFavoriteUsers();
 			}
 		</script>
+
+		<!-- CSS styles -->
+		<style type="text/css" >
+
+		</style>
 	</head>
-	<body onload="initialize();">
-		<div id="screen">
-			<div class="pane" id="heading">Customized Wormhole Technology</div>
-			<div class="pane" id="info">
-				<div class="infoItem">Platform: <span id="platform">&nbsp;</span></div>
-				<div class="infoItem">Version: <span id="version">&nbsp;</span></div>
-				<div class="infoItem">UUID: <span id="uuid">&nbsp;</span></div>
-				<div class="infoItem">Name: <span id="name">&nbsp;</span></div>
-				<div class="infoItem">Width: <span id="width">&nbsp;</span></div>
-				<div class="infoItem">Height: <span id="height">&nbsp;</span></div>
+
+	<!-- A simple JQTouch layout consisting of two views -->
+	<body onload="initialize()">
+		<!-- "Page 1" -->
+		<div id="theform">
+			<div class="toolbar">
+				<h1>Tweet Reader</h1>
 			</div>
-			<div class="pane button" onclick="vibrate();">Vibrate</div>
-			<div class="pane button" onclick="beep();">Beep</div>
-			<div class="pane button" onclick="changeColor();">Change Color</div>
+			<ul class="rounded">
+				<li>
+					<input onkeydown="keydown(event.which);"
+						type="text"
+						placeholder="User name"
+						name="username"
+						id="usernameInput"
+						autocapitalize="off"
+						autocorrect="off"
+						autocomplete="off">
+				</li>
+
+				<li class="arrow">
+					<a id="submitButton" >View Tweets by this user</a></li>
+				<li><a id="favoriteButton">Add to Favorites List</a></li>
+			</ul>
+
+			<ul id="favorites" class="rounded">
+				<li>Favorites:</li>
+			</ul>
+
 		</div>
-	</body>
+
+		<!-- "Page 2" - Will contain the tweets found -->
+		<div id="tweets">
+			<div class="toolbar">
+				<h1 id="tweetsTitle">Tweets By ...</h1>
+				<a class="button back" href="#theform" id="backButton">Back</a>
+			</div>
+
+			<ul id="results_ul" class="rounded">
+				<li>Loading...</li>
+			</ul>
+		</div>
+
+	</div>
+</body>
 </html>

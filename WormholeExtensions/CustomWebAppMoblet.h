@@ -35,6 +35,14 @@ MA 02110-1301, USA.
 namespace Wormhole
 {
 
+/**
+ * Moblet designed to make it easy to add custom C++ code that
+ * can be invoked from JavaScript.
+ *
+ * Members are made virtual and public by design, to give
+ * maximum flexibility to users of this class. Do not access
+ * instance variables directly, unless absolutely needed.
+ */
 class CustomWebAppMoblet :
 	public WebAppMoblet,
 	public FunObject
@@ -51,12 +59,30 @@ public:
 	virtual ~CustomWebAppMoblet();
 
 	/**
+	 * Display a page. Will automatically call initialize()
+	 * if it has not been called.
+	 */
+	virtual void showPage(const MAUtil::String& url);
+
+	/**
 	 * Initialize the moblet.
+	 */
+	virtual void initialize();
+
+	/**
+	 * Initialize the PhoneGap JavScript library. Should be
+	 * called after the page has been displayed.
+	 */
+	virtual void initializePhoneGap(
+		Wormhole::CustomWebAppMoblet* moblet);
+
+	/**
+	 * Set the sound used for the PhoneGap beep notification.
 	 *
 	 * @param beepSoundResource Handle to the "beep" sound
 	 * played by the PhoneGap API.
 	 */
-	virtual void init(MAHandle beepSoundResource);
+	virtual void setBeepSound(MAHandle beepSoundResource);
 
 	/**
 	 * Add a function invoked when a message is sent from JavaScript.
@@ -74,7 +100,7 @@ public:
 	 * @param fun Function of type MessageHandlerFun. This function must
 	 * be a member of a subclass of WebAppMoblet.
 	 */
-	void addMessageFun(
+	virtual void addMessageFun(
 		const char* command,
 		Wormhole::FunTable::MessageHandlerFun fun);
 
@@ -102,6 +128,11 @@ public:
 	 * Handles messages sent from JavaScript.
 	 */
 	MessageHandler mMessageHandler;
+
+	/**
+	 * Is the moblet initialized?
+	 */
+	bool mInitialized;
 
 }; // class
 

@@ -1,15 +1,16 @@
+
 /**
  * @file main.cpp
+ * @author Ali Sarrafi & Mikael Kindborg
  *
- * This template application shows how to extend the functionality
- * in HTML5/JS with custom code written in C++. See code below
- * for custom code added in methods handleMessageStreamJSON()
- * and handleMessageStream().
+ * Application that reads Twitter flows.
  *
- * When reading the code below, it is good to know that there are
- * two message formats: JSON and string streams. String streams are
- * generally faster. See comments in the code below for further details.
- * PhoneGap uses JSON messages, NativeUI uses string streams.
+ * This program illustrates how to use the jQTouch JavAScript
+ * library in a MoSync WebView application. The program also
+ * shows how to communicate from JavaScript to C++.
+ *
+ * The entire UI and most of the application logic is implemented
+ * in JavaScript.
  */
 
 #include <Wormhole/WebAppMoblet.h>
@@ -21,7 +22,8 @@
 #include <Wormhole/Libs/JSNativeUI/ResourceMessageHandler.h>
 
 #include <CustomWebAppMoblet.h>
-#include <FunTable.h>
+
+#include "FileMessageHandler.h" // Custom File API.
 
 #include "MAHeaders.h"
 
@@ -33,32 +35,47 @@ using namespace Wormhole; // Wormhole library.
 /**
  * The application class.
  */
-class MyMoblet : public CustomWebAppMoblet
+class TwitterMoblet : public CustomWebAppMoblet
 {
 public:
-	MyMoblet()
+	TwitterMoblet()
 	{
-		init(BEEP_WAV);
+		// Show the start page. This will also perform initialization if needed.
+		showPage("index.html");
+
+		// TODO: Call from JavaScript last in index.html, or last in wormhole.js ?
+		// Have written code in MessageHandler.cpp to call initializePhoneGap().
+		// Problem with having it here may be that PhoneGap is not loaded
+		// when initializePhoneGap() is called (is this possible?).
+		initializePhoneGap();
+
+		// The beep sound is defined in file "Resources/Resources.lst".
+		setBeepSound(BEEP_WAV);
+
+		// Turn off zoom.
+		getWebView()->disableZoom();
 
 		// Register functions to handle custom messages sent from JavaScript.
 		addMessageFun(
-			"Vibrate",
-			(FunTable<WebAppMoblet>::MessageHandlerFun)&MyMoblet::vibrate);
-
-		// The page in the "LocalFiles" folder to
-		// show when the application starts.
-		showPage("index.html");
+			"File",
+			(FunTable::MessageHandlerFun)&MyMoblet::handleFileMessage);
 	}
 
-	virtual ~MyMoblet()
+	virtual ~TwitterMoblet()
 	{
 		// Add cleanup code as needed.
 	}
 
-	void vibrate(Wormhole::MessageStream& stream)
+	void handleFileMessage(Wormhole::MessageStream& stream)
 	{
-		maVibrate(500);
+		mMessageHandler.handleMessage(message);
 	}
+
+private:
+	/**
+	 * Object that handles messages from JavaScript.
+	 */
+	FileMessageHandler mMessageHandler;
 };
 
 /**
@@ -68,6 +85,6 @@ public:
  */
 extern "C" int MAMain()
 {
-	Moblet::run(new MyMoblet());
+	Moblet::run(new TwitterMoblet());
 	return 0;
 }

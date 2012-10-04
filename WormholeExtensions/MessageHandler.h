@@ -48,6 +48,10 @@ class CustomWebAppMoblet;
 
 /**
  * Handler for Wormhole messages of type "Custom".
+ *
+ * Members are made virtual and public by design, to give
+ * maximum flexibility to users of this class. Do not access
+ * instance variables directly, unless absolutely needed.
  */
 class MessageHandler
 {
@@ -55,36 +59,37 @@ public:
 	MessageHandler();
 	virtual ~MessageHandler();
 
-	void init(
-		MAHandle beepSound,
-		Wormhole::CustomWebAppMoblet* moblet);
+	virtual void initialize(Wormhole::CustomWebAppMoblet* moblet);
 
-	void addMessageFun(
+	virtual void initializePhoneGap(Wormhole::CustomWebAppMoblet* moblet);
+
+	virtual void setBeepSound(MAHandle beepSound);
+
+	virtual void addMessageFun(
 		const char* command,
 		Wormhole::FunTable::MessageHandlerFun fun);
 
-	void callMessageFun(
+	virtual void callMessageFun(
 		const char* command,
 		Wormhole::MessageStream& stream,
 		Wormhole::CustomWebAppMoblet* moblet);
 
-	void keyPressEvent(int keyCode, int nativeCode);
+	virtual void keyPressEvent(int keyCode, int nativeCode);
 
-	void handleWebViewMessage(
+	virtual void handleWebViewMessage(
 		NativeUI::WebView* webView,
 		MAHandle data,
 		Wormhole::CustomWebAppMoblet* moblet);
 
-	void handleMessageStreamJSON(
+	virtual void handleMessageStreamJSON(
 		NativeUI::WebView* webView,
 		MAHandle data);
 
-	void handleMessageStream(
+	virtual void handleMessageStream(
 		NativeUI::WebView* webView,
 		MAHandle data,
 		Wormhole::CustomWebAppMoblet* moblet);
 
-private:
 	/**
 	 * Handler for PhoneGap messages.
 	 */

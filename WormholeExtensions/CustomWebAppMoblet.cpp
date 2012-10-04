@@ -31,14 +31,25 @@ namespace Wormhole
 
 CustomWebAppMoblet::CustomWebAppMoblet()
 {
+	mInitialized = false;
 }
 
 CustomWebAppMoblet::~CustomWebAppMoblet()
 {
 }
 
-void CustomWebAppMoblet::init(MAHandle beepSoundResource)
+void CustomWebAppMoblet::showPage(const MAUtil::String& url)
 {
+	initialize();
+	WebAppMoblet::showPage("index.html");
+}
+
+void CustomWebAppMoblet::initialize()
+{
+	if (mInitialized) { return; }
+
+	mInitialized = true;
+
 	// Extract files in LocalFiles folder to the device.
 	extractFileSystem();
 
@@ -51,7 +62,18 @@ void CustomWebAppMoblet::init(MAHandle beepSoundResource)
 	getWebView()->setVisible(true);
 
 	// The beep sound is defined in file "Resources/Resources.lst".
-	mMessageHandler.init(beepSoundResource, this);
+	mMessageHandler.initialize(this);
+}
+
+void CustomWebAppMoblet::initializePhoneGap(
+	Wormhole::CustomWebAppMoblet* moblet)
+{
+	mMessageHandler.initializePhoneGap(moblet);
+}
+
+void CustomWebAppMoblet::setBeepSound(MAHandle beepSoundResource)
+{
+	mMessageHandler.setBeepSound(beepSoundResource);
 }
 
 void CustomWebAppMoblet::addMessageFun(
