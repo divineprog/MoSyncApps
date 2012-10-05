@@ -41,7 +41,7 @@ CustomWebAppMoblet::~CustomWebAppMoblet()
 void CustomWebAppMoblet::showPage(const MAUtil::String& url)
 {
 	initialize();
-	WebAppMoblet::showPage("index.html");
+	WebAppMoblet::showPage(url);
 }
 
 void CustomWebAppMoblet::initialize()
