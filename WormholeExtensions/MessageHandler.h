@@ -90,6 +90,11 @@ public:
 		MAHandle data,
 		Wormhole::CustomWebAppMoblet* moblet);
 
+	virtual void handleMoSyncMessage(
+		Wormhole::MessageStream& message,
+		NativeUI::WebView* webView,
+		Wormhole::CustomWebAppMoblet* moblet);
+
 	/**
 	 * Handler for PhoneGap messages.
 	 */

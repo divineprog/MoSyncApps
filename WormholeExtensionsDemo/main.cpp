@@ -61,8 +61,6 @@ public:
 		addMessageFun(
 			"Vibrate",
 			(FunTable::MessageHandlerFun)&MyMoblet::vibrate);
-
-		// Register functions to handle custom messages sent from JavaScript.
 		addMessageFun(
 			"Beep",
 			(FunTable::MessageHandlerFun)&MyMoblet::beep);

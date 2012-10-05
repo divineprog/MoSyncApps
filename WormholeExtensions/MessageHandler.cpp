@@ -207,15 +207,32 @@ void MessageHandler::handleMessageStream(
 					moblet);
 			}
 		}
-		else if (0 == strcmp(p, "ExitApplication"))
+		else if (0 == strcmp(p, "MoSync"))
 		{
-			// Close the application (calls method in class Moblet).
-			moblet->close();
+			handleMoSyncMessage(stream, webView, moblet);
 		}
-		else if (0 == strcmp(p, "InitializePhoneGap"))
-		{
-			moblet->initializePhoneGap(moblet);
-		}
+	}
+}
+
+void MessageHandler::handleMoSyncMessage(
+	Wormhole::MessageStream& message,
+	NativeUI::WebView* webView,
+	Wormhole::CustomWebAppMoblet* moblet)
+{
+	const char* p = message.getNext();
+
+	if (0 == strcmp(p, "ExitApplication"))
+	{
+		// Close the application.
+		moblet->close();
+	}
+	else if (0 == strcmp(p, "SendToBackground"))
+	{
+		maSendToBackground();
+	}
+	else if (0 == strcmp(p, "InitializePhoneGap"))
+	{
+		moblet->initializePhoneGap(moblet);
 	}
 }
 
