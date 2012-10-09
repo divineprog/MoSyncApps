@@ -44,7 +44,7 @@ MA 02110-1301, USA.
 namespace Wormhole
 {
 
-class CustomWebAppMoblet;
+class HybridMoblet;
 
 /**
  * Handler for Wormhole messages of type "Custom".
@@ -59,9 +59,9 @@ public:
 	MessageHandler();
 	virtual ~MessageHandler();
 
-	virtual void initialize(Wormhole::CustomWebAppMoblet* moblet);
+	virtual void initialize(Wormhole::HybridMoblet* moblet);
 
-	virtual void initializePhoneGap(Wormhole::CustomWebAppMoblet* moblet);
+	virtual void initializePhoneGap(Wormhole::HybridMoblet* moblet);
 
 	virtual void setBeepSound(MAHandle beepSound);
 
@@ -72,14 +72,14 @@ public:
 	virtual void callMessageFun(
 		const char* command,
 		Wormhole::MessageStream& stream,
-		Wormhole::CustomWebAppMoblet* moblet);
+		Wormhole::HybridMoblet* moblet);
 
 	virtual void keyPressEvent(int keyCode, int nativeCode);
 
 	virtual void handleWebViewMessage(
 		NativeUI::WebView* webView,
 		MAHandle data,
-		Wormhole::CustomWebAppMoblet* moblet);
+		Wormhole::HybridMoblet* moblet);
 
 	virtual void handleMessageStreamJSON(
 		NativeUI::WebView* webView,
@@ -88,12 +88,30 @@ public:
 	virtual void handleMessageStream(
 		NativeUI::WebView* webView,
 		MAHandle data,
-		Wormhole::CustomWebAppMoblet* moblet);
+		Wormhole::HybridMoblet* moblet);
 
 	virtual void handleMoSyncMessage(
 		Wormhole::MessageStream& message,
 		NativeUI::WebView* webView,
-		Wormhole::CustomWebAppMoblet* moblet);
+		Wormhole::HybridMoblet* moblet);
+
+	/**
+	 * Invoked from JavaScript to evaluate a JS script in a WebView.
+	 */
+	virtual void handleCallJSMessage(
+		Wormhole::MessageStream& message,
+		NativeUI::WebView* webView,
+		Wormhole::HybridMoblet* moblet);
+
+	/**
+	 * Evaluate JavaScript code in a WebView.
+	 * @param webViewHandle The MoSync handle to the WebView in which
+	 * to evaluate the script (this handle is an integer id).
+	 * @param script JavaScript string.
+	 */
+	virtual void MessageHandler::callJS(
+		MAWidgetHandle webViewHandle,
+		const MAUtil::String& script);
 
 	/**
 	 * Handler for PhoneGap messages.

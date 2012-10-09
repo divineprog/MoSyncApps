@@ -73,10 +73,22 @@
 			}
 
 			/**
-			 * Change page background to random color.
-			 * Does not demo anything special. Just for fun!
+			 * "Dry-run" the ability to call JS in another WebView.
+			 * Note that we call back into this very same WebView, 
+			 * just for testing purposes. This is useful in a NativeUI
+			 * app that has multiple WebViews that need to communicate.
 			 */
 			function changeColor()
+			{
+				mosync.nativeui.callJS(
+					mosync.nativeui.MAIN_WEBVIEW,
+					"performChangeColor()");
+			}
+			
+			/**
+			 * Change page background to a random color.
+			 */
+			function performChangeColor()
 			{
 				var color = "#" +
 					(Math.random() * 0xFFFFFF + 0x1000000)
@@ -103,9 +115,9 @@
 				<div class="infoItem">Width: <span id="width">&nbsp;</span></div>
 				<div class="infoItem">Height: <span id="height">&nbsp;</span></div>
 			</div>
-			<div class="pane button" onclick="vibrate();">Vibrate</div>
-			<div class="pane button" onclick="beep();">Beep</div>
-			<div class="pane button" onclick="changeColor();">Change Color</div>
+			<div class="pane button" onclick="vibrate()">Vibrate</div>
+			<div class="pane button" onclick="beep()">Beep</div>
+			<div class="pane button" onclick="changeColor()">Change Color</div>
 		</div>
 	</body>
 </html>

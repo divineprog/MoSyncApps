@@ -17,7 +17,7 @@ MA 02110-1301, USA.
 */
 
 /**
- * @file CustomWebAppMoblet.h
+ * @file HybridMoblet.h
  *
  * @author Mikael Kindborg
  */
@@ -43,7 +43,7 @@ namespace Wormhole
  * maximum flexibility to users of this class. Do not access
  * instance variables directly, unless absolutely needed.
  */
-class CustomWebAppMoblet :
+class HybridMoblet :
 	public WebAppMoblet,
 	public FunObject
 {
@@ -51,12 +51,12 @@ public:
 	/**
 	 * Constructor.
 	 */
-	CustomWebAppMoblet();
+	HybridMoblet();
 
 	/**
 	 * Destructor.
 	 */
-	virtual ~CustomWebAppMoblet();
+	virtual ~HybridMoblet();
 
 	/**
 	 * Display a page. Will automatically call initialize()
@@ -74,7 +74,7 @@ public:
 	 * called after the page has been displayed.
 	 */
 	virtual void initializePhoneGap(
-		Wormhole::CustomWebAppMoblet* moblet);
+		Wormhole::HybridMoblet* moblet);
 
 	/**
 	 * Set the sound used for the PhoneGap beep notification.

@@ -25,7 +25,7 @@ MA 02110-1301, USA.
  */
 
 #include "MessageHandler.h"
-#include "CustomWebAppMoblet.h"
+#include "HybridMoblet.h"
 
 namespace Wormhole
 {
@@ -56,7 +56,7 @@ MessageHandler::~MessageHandler()
 	}
 }
 
-void MessageHandler::initialize(Wormhole::CustomWebAppMoblet* moblet)
+void MessageHandler::initialize(Wormhole::HybridMoblet* moblet)
 {
 	NativeUI::WebView* webView = moblet->getWebView();
 	mPhoneGapMessageHandler = new PhoneGapMessageHandler(webView);
@@ -64,7 +64,7 @@ void MessageHandler::initialize(Wormhole::CustomWebAppMoblet* moblet)
 	mResourceMessageHandler = new ResourceMessageHandler(webView);
 }
 
-void MessageHandler::initializePhoneGap(Wormhole::CustomWebAppMoblet* moblet)
+void MessageHandler::initializePhoneGap(Wormhole::HybridMoblet* moblet)
 {
 	// Send the Device Screen size to JavaScript.
 	MAExtent scrSize = maGetScrSize();
@@ -98,7 +98,7 @@ void MessageHandler::addMessageFun(
 void MessageHandler::callMessageFun(
 	const char* command,
 	Wormhole::MessageStream& stream,
-	Wormhole::CustomWebAppMoblet* moblet)
+	Wormhole::HybridMoblet* moblet)
 {
 	mFunTable.callMessageFun(command, stream, moblet);
 }
@@ -122,7 +122,7 @@ void MessageHandler::keyPressEvent(int keyCode, int nativeCode)
 void MessageHandler::handleWebViewMessage(
 	NativeUI::WebView* webView,
 	MAHandle data,
-	Wormhole::CustomWebAppMoblet* moblet)
+	Wormhole::HybridMoblet* moblet)
 {
 	// Check the message protocol.
 	Wormhole::MessageProtocol protocol(data);
@@ -173,7 +173,7 @@ void MessageHandler::handleMessageStreamJSON(
 void MessageHandler::handleMessageStream(
 	NativeUI::WebView* webView,
 	MAHandle data,
-	Wormhole::CustomWebAppMoblet* moblet)
+	Wormhole::HybridMoblet* moblet)
 {
 	// Create a message stream object. This parses the message data.
 	// The message object contains one or more strings.
@@ -185,14 +185,20 @@ void MessageHandler::handleMessageStream(
 	// Process messages while there are strings left in the stream.
 	while (p = stream.getNext())
 	{
-		if (0 == strcmp(p, "NativeUI"))
+		if (0 == strcmp(p, "CallJS"))
 		{
-			//Forward NativeUI messages to the respective message handler
+			// Call to evaluate JavaScript in another WebView.
+			// This is used to communicate between WebViews.
+			handleCallJSMessage(stream, webView, moblet);
+		}
+		else if (0 == strcmp(p, "NativeUI"))
+		{
+			// Forward NativeUI messages.
 			mNativeUIMessageHandler->handleMessage(stream);
 		}
 		else if (0 == strcmp(p, "Resource"))
 		{
-			//Forward Resource messages to the respective message handler
+			// Forward Resource messages.
 			mResourceMessageHandler->handleMessage(stream);
 		}
 		else if (0 == strcmp(p, "Custom"))
@@ -209,6 +215,7 @@ void MessageHandler::handleMessageStream(
 		}
 		else if (0 == strcmp(p, "MoSync"))
 		{
+			// Handle messages specific to MoSync.
 			handleMoSyncMessage(stream, webView, moblet);
 		}
 	}
@@ -217,7 +224,7 @@ void MessageHandler::handleMessageStream(
 void MessageHandler::handleMoSyncMessage(
 	Wormhole::MessageStream& message,
 	NativeUI::WebView* webView,
-	Wormhole::CustomWebAppMoblet* moblet)
+	Wormhole::HybridMoblet* moblet)
 {
 	const char* p = message.getNext();
 
@@ -234,6 +241,51 @@ void MessageHandler::handleMoSyncMessage(
 	{
 		moblet->initializePhoneGap(moblet);
 	}
+}
+
+/**
+ * Invoked from JavaScript to evaluate a JS script in a WebView.
+ */
+void MessageHandler::handleCallJSMessage(
+	Wormhole::MessageStream& message,
+	NativeUI::WebView* webView,
+	Wormhole::HybridMoblet* moblet)
+{
+	// TODO: Add error handling (missing parameters).
+
+	// Get the native MoSync widget handle for the WebView
+	// this call should be forwarded to.
+	int webViewHandle = MAUtil::stringToInteger(message.getNext());
+
+	// When the handle is zero, we use the main WebView
+	// (which is hidden in a NativeUI app).
+	if (0 == webViewHandle)
+	{
+		webViewHandle = moblet->getWebView()->getWidgetHandle();
+	}
+
+	// Evaluate the JavaScript code in the WebView.
+	const char* script = message.getNext();
+	callJS(webViewHandle, script);
+	//moblet->callJS(webViewHandle, script);
+}
+
+/**
+ * Evaluate JavaScript code in a WebView.
+ * @param webViewHandle The MoSync handle to the WebView in which
+ * to evaluate the script (this handle is an integer id).
+ * @param script JavaScript string.
+ */
+void MessageHandler::callJS(
+	MAWidgetHandle webViewHandle,
+	const MAUtil::String& script)
+{
+	// Call the JavaScript code on the WebView.
+	MAUtil::String url = "javascript:" + script;
+	maWidgetSetProperty(
+		webViewHandle,
+		MAW_WEB_VIEW_URL,
+		url.c_str());
 }
 
 } // namespace

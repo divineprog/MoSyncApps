@@ -17,34 +17,34 @@ MA 02110-1301, USA.
 */
 
 /**
- * @file CustomWebAppMoblet.cpp
+ * @file HybridMoblet.cpp
  *
  * @author Mikael Kindborg
  */
 
-#include "CustomWebAppMoblet.h"
+#include "HybridMoblet.h"
 
 using namespace MAUtil;
 
 namespace Wormhole
 {
 
-CustomWebAppMoblet::CustomWebAppMoblet()
+HybridMoblet::HybridMoblet()
 {
 	mInitialized = false;
 }
 
-CustomWebAppMoblet::~CustomWebAppMoblet()
+HybridMoblet::~HybridMoblet()
 {
 }
 
-void CustomWebAppMoblet::showPage(const MAUtil::String& url)
+void HybridMoblet::showPage(const MAUtil::String& url)
 {
 	initialize();
 	WebAppMoblet::showPage(url);
 }
 
-void CustomWebAppMoblet::initialize()
+void HybridMoblet::initialize()
 {
 	if (mInitialized) { return; }
 
@@ -65,25 +65,25 @@ void CustomWebAppMoblet::initialize()
 	mMessageHandler.initialize(this);
 }
 
-void CustomWebAppMoblet::initializePhoneGap(
-	Wormhole::CustomWebAppMoblet* moblet)
+void HybridMoblet::initializePhoneGap(
+	Wormhole::HybridMoblet* moblet)
 {
 	mMessageHandler.initializePhoneGap(moblet);
 }
 
-void CustomWebAppMoblet::setBeepSound(MAHandle beepSoundResource)
+void HybridMoblet::setBeepSound(MAHandle beepSoundResource)
 {
 	mMessageHandler.setBeepSound(beepSoundResource);
 }
 
-void CustomWebAppMoblet::addMessageFun(
+void HybridMoblet::addMessageFun(
 	const char* command,
 	FunTable::MessageHandlerFun fun)
 {
 	mMessageHandler.addMessageFun(command, fun);
 }
 
-void CustomWebAppMoblet::handleWebViewMessage(
+void HybridMoblet::handleWebViewMessage(
 	NativeUI::WebView* webView,
 	MAHandle data)
 {
@@ -94,7 +94,7 @@ void CustomWebAppMoblet::handleWebViewMessage(
  * This method is called when a key is pressed.
  * Eventually forwards the event to PhoneGapMessageHandler.
  */
-void CustomWebAppMoblet::keyPressEvent(int keyCode, int nativeCode)
+void HybridMoblet::keyPressEvent(int keyCode, int nativeCode)
 {
 	mMessageHandler.keyPressEvent(keyCode, nativeCode);
 }

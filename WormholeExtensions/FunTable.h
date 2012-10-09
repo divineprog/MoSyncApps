@@ -43,7 +43,8 @@ namespace Wormhole
 {
 
 /**
- * Abstract superclass for classes that has method
+ * Abstract superclass for classes that has callback methods
+ * to be invoked from JavaScript.
  */
 class FunObject
 {

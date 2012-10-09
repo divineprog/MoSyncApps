@@ -3,14 +3,14 @@
  *
  * This template application shows how to extend the functionality
  * in HTML5/JS with custom code written in C++. The code uses a new
- * class called CustomWebAppMoblet, which in turn uses classes
+ * class called HybridMoblet, which in turn uses classes
  * MessageHandler, and FunTable, available in the Wormhole namespace.
  * These classes use a table of member functions to lookup the
  * method to invoke when sending a message from JavaScript.
  *
  * There are two JavaScript to C++ message formats: JSON and string
  * streams. String streams are generally faster, and this is the format
- * used by CustomWebAppMoblet and MessageHandler when invoking custom code.
+ * used by HybridMoblet and MessageHandler when invoking custom code.
  *
  * To build this example, you need to have project WormholeExtensions
  * imported into the MoSync IDE (in the same workspace as this project).
@@ -24,7 +24,7 @@
 #include <Wormhole/Libs/JSNativeUI/NativeUIMessageHandler.h>
 #include <Wormhole/Libs/JSNativeUI/ResourceMessageHandler.h>
 
-#include <CustomWebAppMoblet.h>
+#include <HybridMoblet.h>
 
 #include "MAHeaders.h" // Defines BEEP_WAV
 
@@ -36,7 +36,7 @@ using namespace Wormhole; // Wormhole library.
 /**
  * The application class.
  */
-class MyMoblet : public CustomWebAppMoblet
+class MyMoblet : public HybridMoblet
 {
 public:
 	MyMoblet()

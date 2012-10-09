@@ -5178,7 +5178,7 @@ mosync.MAW_LABEL = "Label";
 mosync.MAW_EDIT_BOX = "EditBox";
 
 /**
-* @brief A list view is a vertical list of widgets that is also scrollable.
+* @brief A list view is a vertical list of widgets that is also scrollable. See \ref WidgetListViewProperties "List view properties" for the properties available.
 */
 mosync.MAW_LIST_VIEW = "ListView";
 
@@ -6480,6 +6480,22 @@ mosync.MAW_LIST_VIEW_ITEM_FONT_SIZE = "fontSize";
 * \endcode
 */
 mosync.MAW_LIST_VIEW_ITEM_FONT_HANDLE = "fontHandle";
+
+/**
+* @brief Enforces the focus on the list. Generally needed when for some reason the list looses it's focus.
+*
+* @validvalue None needed.
+*
+* Platform: Android.
+*
+* @setonly
+*
+* @par Example
+* \code
+*	maWidgetSetProperty(listViewHandle, MAW_LIST_VIEW_REQUEST_FOCUS, "");
+* \endcode
+*/
+mosync.MAW_LIST_VIEW_REQUEST_FOCUS = "requestFocus";
 
 /**
 * @brief Set or get the checked state of the checkbox.
@@ -9603,6 +9619,30 @@ mosync.nativeui.widgetIDList = {};
 mosync.nativeui.getElementById = function(elementID)
 {
 	return mosync.nativeui.widgetIDList[elementID];
+};
+
+/**
+ * Constant to be used to reference the main WebView in an app
+ * when calling mosync.nativeui.callJS().
+ */
+mosync.nativeui.MAIN_WEBVIEW = 0;
+
+/**
+ * Evaluate JavaScript code in another WebView. This provides a
+ * way to pass messages and communicate between WebViews.
+ *
+ * @param webViewHandle The MoSync handle of the WebView widget.
+ * Use mosync.nativeui.MAIN_WEBVIEW to refer to the main WebView
+ * in the application (this is the hidden WebView in a JavaScript
+ * NativeUI app).
+ * @param script A string with JavaScript code.
+ */
+mosync.nativeui.callJS = function(webViewHandle, script)
+{
+	mosync.bridge.send([
+		"CallJS",
+		"" + webViewHandle,
+		script]);
 };
 
 /**
