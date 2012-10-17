@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>Twitter Reader</title>
+  <meta name="viewport" content="width=devicewidth; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;"/>
+  
+  <link rel="apple-touch-icon" href="iui/iui-logo-touch-icon.png" />
+  <link rel="stylesheet" href="iui/iui.css" type="text/css" />
+  <link rel="stylesheet" title="Default" href="iui/t/default/default-theme.css"  type="text/css"/>
+  <link rel="stylesheet" href="css/iui-panel-list.css" type="text/css" />
+  
+  <script type="application/x-javascript" src="iui/iui.js"></script>
+  <script type="text/javascript">
+    iui.animOn = true;
+  </script>
+</head>
+
+<body>
+	<div class="toolbar">
+		<h1 id="pageTitle">Twitter Reader</h1>
+		<a id="backButton" class="button" href="#"></a>
+	</div>
+		
+	<div id="home" class="panel" selected="true">
+		<form id="search" class="panel">
+			<fieldset>
+				<div class="row">
+					<label>User name:</label>
+					<input type="text" name="user" value=""/>
+				</div>
+			</fieldset>
+		</form>
+		
+		<ul>
+			<li><a target="_blank" href="#">View Tweets by this user</a></li>
+			<li><a target="_blank" href="#">Add to Favourites</a></li>
+		</ul>
+		
+		<h2>Favourites</h2>
+		<ul>
+			<li><a target="_blank" href="#">Empty</a></li>
+		</ul>
+	</div>
+</body>
+</html>

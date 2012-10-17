@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+  <title>Twitter Reader</title>
+  <meta name="viewport" content="width=devicewidth; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;"/>
+  
+  <link rel="apple-touch-icon" href="iui/iui-logo-touch-icon.png" />
+  <link rel="stylesheet" href="iui/iui.css" type="text/css" />
+  <link rel="stylesheet" title="Default" href="iui/t/default/default-theme.css"  type="text/css"/>
+type="text/css" />
+  <style type="text/css">
+.panel p.normalText { text-align: left;  padding: 0 10px 0 10px; }
+  </style>
+  
+  <script type="application/x-javascript" src="iui/iui.js"></script>
+  <script type="text/javascript">
+    iui.animOn = true;
+  </script>
+</head>
+
+<body>
+
+<div class="toolbar">
+	<h1 id="pageTitle">Hello</h1>
+	<a id="backButton" class="button" href="#"></a>
+</div>
+	
+<!--
+<form id="search" title="Twitter Reader" class="panel" action="search.gtpl" method="POST" selected="false">
+	<h2>Find Movies in Your Area</h2>
+	<fieldset>
+		<div class="row">
+			<label>Movie</label>
+			<input type="text" name="movie" value=""/>
+		</div>
+		<div class="row">
+			<label>Zip</label>
+			<input type="text" name="zip" value=""/>
+		</div>
+	</fieldset>
+	<a class="whiteButton" type="submit" href="#">Search</a>
+</form>
+	-->
+	
+<div id="home" class="panel" selected="true">
+  <fieldset>
+	  <p class="normalText"><b>Welcome to the iUI Demo Site.</b></p>
+  </fieldset>
+  <h2>Featured Sample Apps</h2>
+  <ul>
+	<li><a target="_blank" href="samples/music/music.html">Music Sample</a></li>
+	<li><a target="_blank" href="samples/digg/index.html">Digg Sample</a></li>
+  </ul>
+  <h2>Samples &amp; Tests</h2>
+  <ul>
+	<li><a target="_blank" href="mobile/demos.html">All Samples &amp; Tests</a></li>
+  </ul>
+  <h2>Other iUI Sites</h2>
+  <ul>
+	<li><a target="_blank" href="http://www.iui-js.org">iUI Project Website</a></li>
+	<li><a target="_blank" href="http://code.google.com/p/iui/">iUI on Google Code</a></li>
+  </ul>
+  <h2>About This Page</h2>
+  <fieldset>
+	  <p class="normalText">This page is using iUI in CSS-only mode and supports a wide range of desktop and mobile browsers.  The other pages on this site require modern, W3C-compliant mobile browsers.</p>
+	  <p class="normalText">Current Version: iUI 0.4</p>
+  </fieldset>
+
+</div>
+
+</body>
+</html>

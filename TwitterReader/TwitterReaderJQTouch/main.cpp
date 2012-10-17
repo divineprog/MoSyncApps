@@ -13,15 +13,7 @@
  * in JavaScript.
  */
 
-#include <Wormhole/WebAppMoblet.h>
-#include <Wormhole/MessageProtocol.h>
-#include <Wormhole/MessageStream.h>
-#include <Wormhole/Libs/JSONMessage.h>
-#include <Wormhole/Libs/PhoneGap/PhoneGapMessageHandler.h>
-#include <Wormhole/Libs/JSNativeUI/NativeUIMessageHandler.h>
-#include <Wormhole/Libs/JSNativeUI/ResourceMessageHandler.h>
-
-#include <CustomWebAppMoblet.h>
+#include <Wormhole/HybridMoblet.h>
 
 #include "FileMessageHandler.h" // Custom File API.
 
@@ -35,19 +27,13 @@ using namespace Wormhole; // Wormhole library.
 /**
  * The application class.
  */
-class TwitterMoblet : public CustomWebAppMoblet
+class TwitterMoblet : public HybridMoblet
 {
 public:
 	TwitterMoblet()
 	{
 		// Show the start page. This will also perform initialization if needed.
 		showPage("index.html");
-
-		// TODO: Call from JavaScript last in index.html, or last in wormhole.js ?
-		// Have written code in MessageHandler.cpp to call initializePhoneGap().
-		// Problem with having it here may be that PhoneGap is not loaded
-		// when initializePhoneGap() is called (is this possible?).
-		initializePhoneGap();
 
 		// The beep sound is defined in file "Resources/Resources.lst".
 		setBeepSound(BEEP_WAV);
@@ -58,7 +44,7 @@ public:
 		// Register functions to handle custom messages sent from JavaScript.
 		addMessageFun(
 			"File",
-			(FunTable::MessageHandlerFun)&MyMoblet::handleFileMessage);
+			(FunTable::MessageHandlerFun)&TwitterMoblet::handleFileMessage);
 	}
 
 	virtual ~TwitterMoblet()
@@ -66,7 +52,36 @@ public:
 		// Add cleanup code as needed.
 	}
 
-	void handleFileMessage(Wormhole::MessageStream& stream)
+	void reloadPage()
+	{
+		char* s = "@@@ Reloading page";
+		maWriteLog(s, strlen(s));
+		showPage("http://192.168.0.104:4042/index.html");
+		//showPage("js/web-app/index.html");
+	}
+
+	/**
+	 * This method is called when a key is pressed.
+	 */
+	void keyPressEvent(int keyCode, int nativeCode)
+	{
+		if (MAK_MENU == keyCode)
+		{
+			reloadPage();
+		}
+		else if (MAK_BACK == keyCode)
+		{
+			// Exit the application.
+			close();
+		}
+		else
+		{
+			// Forwards the event to PhoneGapMessageHandler.
+			HybridMoblet::keyPressEvent(keyCode, nativeCode);
+		}
+	}
+
+	void handleFileMessage(Wormhole::MessageStream& message)
 	{
 		mMessageHandler.handleMessage(message);
 	}
@@ -85,6 +100,6 @@ private:
  */
 extern "C" int MAMain()
 {
-	Moblet::run(new TwitterMoblet());
+	(new TwitterMoblet())->enterEventLoop();
 	return 0;
 }

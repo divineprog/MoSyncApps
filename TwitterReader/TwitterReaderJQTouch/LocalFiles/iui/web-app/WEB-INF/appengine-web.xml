@@ -1,0 +1,40 @@
+<appengine-web-app xmlns="http://appengine.google.com/ns/1.0">
+    <application>iui-js</application>
+<!--        <application>iui-framework</application> -->
+    <version>55</version>
+
+    <!-- Enable concurrent requests by default to serve requests in parallel -->
+    <threadsafe>true</threadsafe>
+
+    <!-- If all your templates and groovlets are encoding in UTF-8 -->
+    <!-- Please specify the settings below, otherwise weird characters may appear in your templates -->
+    <system-properties>
+        <property name="file.encoding" value="UTF-8"/>
+        <property name="groovy.source.encoding" value="UTF-8"/>
+    </system-properties>
+
+    <!-- It it advised to keep this parameter to true -->
+    <!-- as per the release of SDK 1.2.8, -->
+    <!-- this should speed up cold startups of applications by 10% -->
+    <precompilation-enabled>true</precompilation-enabled>
+    
+    <static-files>
+        <include path="/**.gif" expiration="1d" />
+        <include path="/**.jpg" expiration="1d" />
+        <include path="/**.png" expiration="1d" />
+        <include path="/**.ico" expiration="1d" />
+        <include path="/**.js" />
+        <include path="/**.css"/>
+        <include path="**.html"/>
+        <include path="/**.frag"/>
+        <include path="/**.manifest"/>
+        <exclude path="/**.gtpl" />
+    </static-files>
+ 
+<!--
+    <system-properties>
+        <property name="java.util.logging.config.file" value="WEB-INF/logging.properties"/>
+    </system-properties>
+ -->
+
+</appengine-web-app>
