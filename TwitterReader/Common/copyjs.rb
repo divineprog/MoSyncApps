@@ -32,6 +32,9 @@ def copyFiles
   dirList = CopyTargets
   fileList = FilesToCopy
   dirList.each do |dirName|
+    if(!File.exist?(dirName))
+      FileUtils.mkdir_p(dirName)
+    end
     fileList.each do |fileName|
       FileUtils.cp(fileName, dirName)
     end
