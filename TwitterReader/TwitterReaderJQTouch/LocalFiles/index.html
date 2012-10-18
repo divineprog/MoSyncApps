@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <!--
 * @file index.html
+* @author Mikael Kindborg
 *
 * MoSync hybrid demo application that uses the iUI user interface framework.
 -->
@@ -9,14 +10,17 @@
 	<meta name="viewport" content="width=devicewidth; initial-scale=1.0; maximum-scale=1.0; user-scalable=0;"/>
 
 	<title>Twitter Reader</title>
-	
+
 	<link rel="apple-touch-icon" href="iui/web-app/iui/iui-logo-touch-icon.png" />
 	<link rel="stylesheet" href="iui/web-app/iui/iui.css" type="text/css" />
 	<link rel="stylesheet" title="Default" href="iui/web-app/iui/t/default/default-theme.css" type="text/css"/>
 	<link rel="stylesheet" href="iui/web-app/css/iui-panel-list.css" type="text/css" />
+
+	<script type="application/x-javascript" src="js/jq.mobi.1.03.js"></script>
 	<script type="application/x-javascript" src="iui/web-app/iui/iui.js"></script>
 
 	<script type="text/javascript" charset="utf-8">
+
 	
 		var mosync = {};
 
@@ -29,8 +33,8 @@
 
 		mosync.file.read = function(path, callbackFun)
 		{
-		  callbackFun("!ddd!!divineprog!");
-		  // callbackFun(null);
+		  //callbackFun("!ddd!!divineprog!");
+		  callbackFun(null);
 		};
 
 		mosync.file.getLocalPath = function(callbackFun)
@@ -57,7 +61,7 @@
 			app.getTweetsForUser = function(user, callbackFun)
 			{
 				console.log("@@@@ getTweetsForUser 1");
-				
+
 				// Create the Twitter url.
 				var twitterUrl =
 					"http://api.twitter.com/1/statuses/" +
@@ -74,7 +78,7 @@
 
 				console.log("@@@@ getTweetsForUser 4");
 			};
-			
+
 			/**
 			 * Read the list of favourite users.
 			 * @param callbackFun Called with parameters:
@@ -131,7 +135,7 @@
 					if (-1 == userList.indexOf(separatedUserName))
 					{
 						userList += separatedUserName;
-					
+
 						// Write user list.
 						mosync.file.write(
 							filePath,
@@ -172,10 +176,10 @@
 		app.ui = (function()
 		{
 			var ui = {};
-			
+
 			// Make sure we get the correct event type on every touch system.
 			//ui.clickEvent = mosync.isIOS ? 'tap' : 'click';
-			
+
 			ui.showMessage = function(message)
 			{
 				// Windows Phone does not support alert, show the message
@@ -197,17 +201,17 @@
 			{
 				return document.getElementById(id);
 			};
-			
+
 			ui.getUserNameField = function()
 			{
-				return ui.get("usernameInput").value;
+				return ui.get("userNameField").value;
 			};
-			
+
 			ui.setUserNameField = function(name)
 			{
-				ui.get("usernameInput").value = name;
+				ui.get("userNameField").value = name;
 			};
-			
+
 			/**
 			 * Displays the Twitter user name in the UI.
 			 * @param user The Twitter user name.
@@ -217,7 +221,7 @@
 				var heading = ui.get("pageTitle");
 				heading.innerHTML = user;
 			};
-			
+
 			/**
 			 * Displays a loading indicator in the UI.
 			 */
@@ -226,27 +230,28 @@
 				var resultsList = ui.get("tweetList");
 				resultsList.innerHTML = "<li>Loading...</li>";
 			};
-			
+
 			/**
 			 * Show the tweets for the user in the input form.
 			 */
 			ui.showTweets = function()
 			{
-				console.log("@@@@ getTweets 1");
-				
+				console.log("@@@@ showTweets 1");
+
 				// Get the user name from the input field.
 				var user = app.ui.getUserNameField();
-				console.log("@@@@ getTweets 2");
+				console.log("@@@@ showTweets 2");
 				if (user.length == 0)
 				{
-					showMessage("Invalid username");
+					console.log("@@@@ showTweets 3");
+					ui.showMessage("ui.showTweets: Invalid username");
 				}
 				else
 				{
-					console.log("@@@@ getTweets 4");
-					showTweetsForUser(user);
+					console.log("@@@@ showTweets 4");
+					ui.showTweetsForUser(user);
 				}
-				console.log("@@@@ getTweets 5");
+				console.log("@@@@ showTweets 5");
 			};
 
 			/**
@@ -256,18 +261,19 @@
 			 */
 			ui.showTweetsForUser = function(user)
 			{
+				console.log("@@@@ showTweetsForUser: "  + user);
 				// Go to second screen.
 				ui.showPage("tweetList");
 				ui.showTweetListUserName(user);
 				ui.showLoadingIndicator();
-				
+
 				// Get tweets.
 				app.getTweetsForUser(user, function(tweets)
 				{
 					ui.showTweetList(tweets);
 				});
 			};
-			
+
 			/**
 			 * Outputs the list of tweets to the user-interface.
 			 * @param tweets The tweets as an array. Each element
@@ -289,7 +295,7 @@
 				}
 				ui.get("tweetList").innerHTML = results;
 			};
-			
+
 			/**
 			 * Read and display list of favourite users.
 			 */
@@ -298,7 +304,7 @@
 				app.readFavouriteUsers(
 					ui.displayFavouriteUsers);
 			};
-			
+
 			/**
 			 * Add a user to the favourite list.
 			 */
@@ -314,7 +320,7 @@
 					ui.showPage("home");
 					return;
 				}
-				
+
 				app.addFavouriteUser(userName, function(userList)
 				{
 					if (!userList)
@@ -328,7 +334,7 @@
 					}
 				});
 			};
-			
+
 			/**
 			 * Diplay the list of favourite users in the UI.
 			 * @param userData Array of user names.
@@ -347,9 +353,9 @@
 				}
 				ui.get("favouriteList").innerHTML = list;
 			};
-			
+
 			/**
-			 * Keydown event listener. Gets called when the user presses 
+			 * Keydown event listener. Gets called when the user presses
 			 * a button on his/her keyboard in the input field.
 			 * @param keynum The pressed key (as an ASCII value).
 			 */
@@ -359,14 +365,15 @@
 				if (keynum == 13)
 				{
 					console.log("@@@@ keydown 2: " + keynum);
-					setTimeout(function () {
+					//setTimeout(function () {
 						console.log("@@@@ calling submitButton");
-						("#submitButton").trigger(clickEvent); 
-					}, 1000);
+						//("#submitButton").trigger(clickEvent);
+						ui.showTweets();
+					//}, 1);
 				}
 				console.log("@@@@ keydown 3: " + keynum);
 			};
-			
+
 			/**
 			 * Set up event bindings and initialize the UI.
 			 */
@@ -377,39 +384,39 @@
 				{
 					ui.showTweets();
 				});
-				
+
 				ui.get("favouriteButton").bind(clickEvent, function(e)
 				{
 					ui.addFavouriteUser();
 				});
-				
+
 				ui.get("backButton").bind(clickEvent, function(e)
 				{
 					ui.goBack();
 				});
 				*/
-				
+
 				ui.initializeFramework();
-				
+
 				ui.readAndDisplayFavouriteUsers();
 			};
-			
+
 			return ui;
 		})();
-			
+
 		/**
 		 * Add iUI framework specific code.
 		 */
 		(function()
 		{
-			/** 
+			/**
 			 * Show one page.
 			 */
 			app.ui.showPage = function(page)
 			{
 				iui.showPageById(page)
 			};
-			
+
 			/**
 			 * Navigates back one page.
 			 */
@@ -417,13 +424,14 @@
 			{
 				iui.goBack();
 			};
-			
+
 			app.ui.initializeFramework = function()
 			{
 				iui.animOn = true;
+				iui.logging = true;
 			};
 		})();
-		
+
 		// Call initialize function when document has loaded.
 		document.addEventListener(
 			"DOMContentLoaded",
@@ -443,9 +451,9 @@
 			<fieldset>
 				<div class="row">
 					<label>User name:</label>
-					<input onkeydown="keydown()"
+					<input onkeydown="app.ui.keydown(event.which)"
 						type="text"
-						id="userNameInput"
+						id="userNameField"
 						placeholder="User name"
 						autocapitalize="off"
 						autocorrect="off"
@@ -453,19 +461,19 @@
 				</div>
 			</fieldset>
 		</form>
-		
+
 		<ul>
-			<li><a target="_blank" href="#" onclick="app.ui.showTweets()">View Tweets by this user</a></li>
-			<li><a target="_blank" href="#" onclick="app.ui.addFavouriteUser()">Add to Favourites</a></li>
+			<li><a onclick="app.ui.showTweets()">View Tweets by this user</a></li>
+			<li><a onclick="app.ui.addFavouriteUser()">Add to Favourites</a></li>
 		</ul>
-		
+
 		<h2>Favourites</h2>
 		<ul id="favouriteList">
-			<li><a target="_blank" href="#">(Empty)</a></li>
+			<li><a>(Empty)</a></li>
 		</ul>
 	</div>
-	
-	<ul id="tweetList" title="TweetList">
+
+	<ul id="tweetList">
 		<li>Loading...</li>
 	</ul>
 

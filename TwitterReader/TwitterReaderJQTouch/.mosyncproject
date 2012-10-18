@@ -8,13 +8,13 @@
 </filter>
 </criteria>
 <properties>
-<property key="build.prefs:additional.include.paths/Debug" value="%project:WormholeExtensions%/"/>
-<property key="build.prefs:additional.include.paths/Release" value="%project:WormholeExtensions%/"/>
+<property key="build.prefs:additional.include.paths/Debug" value=""/>
+<property key="build.prefs:additional.include.paths/Release" value=""/>
 <property key="build.prefs:additional.libraries" value="MAUtil.lib, NativeUI.lib, MAFS.lib, Wormhole.lib, yajl.lib, Notification.lib"/>
-<property key="build.prefs:additional.libraries/Debug" value="MAUtilD.lib, NativeUID.lib, MAFSD.lib, WormholeD.lib, yajlD.lib, NotificationD.lib, WormholeExtensions.lib"/>
-<property key="build.prefs:additional.libraries/Release" value="MAUtil.lib, NativeUI.lib, MAFS.lib, Wormhole.lib, yajl.lib, Notification.lib, WormholeExtensions.lib"/>
-<property key="build.prefs:additional.library.paths/Debug" value="%project:WormholeExtensions%/Output/Debug"/>
-<property key="build.prefs:additional.library.paths/Release" value="%project:WormholeExtensions%/Output/Release"/>
+<property key="build.prefs:additional.libraries/Debug" value="MAUtilD.lib, NativeUID.lib, MAFSD.lib, WormholeD.lib, yajlD.lib, NotificationD.lib"/>
+<property key="build.prefs:additional.libraries/Release" value="MAUtil.lib, NativeUI.lib, MAFS.lib, Wormhole.lib, yajl.lib, Notification.lib"/>
+<property key="build.prefs:additional.library.paths/Debug" value=""/>
+<property key="build.prefs:additional.library.paths/Release" value=""/>
 <property key="build.prefs:extra.link.sw/Debug" value=""/>
 <property key="build.prefs:extra.link.sw/Release" value=""/>
 <property key="build.prefs:extra.res.sw/Debug" value=""/>
@@ -34,5 +34,6 @@
 <property key="excludes/Release" value=""/>
 <property key="profile.mgr.type" value="0"/>
 <property key="template.id" value="project.html5.hybrid"/>
+<property key="winmobilecs:guid" value="c5f14d70-f116-102f-80aa-f9120ac973a0"/>
 </properties>
 </project>

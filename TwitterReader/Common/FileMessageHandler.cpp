@@ -23,6 +23,7 @@ MA 02110-1301, USA.
  * Implementation of system calls made from JavaScript.
  */
 
+#include <conprint.h>
 #include <Wormhole/FileUtil.h>
 #include "FileMessageHandler.h"
 
@@ -44,8 +45,6 @@ FileMessageHandler::~FileMessageHandler()
 	// Nothing needs to be explicitly destroyed.
 }
 
-#include <conprint.h>
-
 /**
  * Implementation of standard API exposed to JavaScript.
  * @return true if message was handled, false if not.
@@ -54,6 +53,9 @@ bool FileMessageHandler::handleMessage(Wormhole::MessageStream& message)
 {
 	const char* operation = message.getNext();
 	//int webViewHandle = MAUtil::stringToInteger(message.getNext());
+	
+	maWriteLog("@@@2", 4);
+	maWriteLog(operation, strlen(operation));
 
 	if (0 == strcmp(operation, "mosync.file.getLocalPath"))
 	{

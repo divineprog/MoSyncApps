@@ -1,0 +1,21 @@
+TwitterReader Example App
+
+Mikael Kindborg, MoSync AB
+
+MoSync is a cross-platform development tool. Home page: http://mosync.com
+
+The TwitterReader example application demonstrates hybrid app development with MoSync. There are five different MoSync projects in this folder, each of which uses a different UI library.
+
+To build the projects, import them into the MoSync SDK, and build from there. [TODO: Add link to MoSYnc SDK tutorial.]
+
+Very important is that you before building run the Ruby script copyjs.rb in the folder Common. This folder contains code that is shared by all TwitterReader projects. If you don't have Ruby installed on your machine, you can manually copy the files in folder Common/js to LocalFiles/js in each of the projects. C/C++ files need not be copied, since they are included from the file main.cpp in each project. JavaScript files, are however not possible to include in this way, which is why they need to be explicitly copied.
+
+The application demonstrates the following progamming techniques:
+
+* How to invoke C++ code from JavaScript and the reverse.
+* The implementation of a simple but usable File API for reading adn writing text files on a mobile device.
+* A way to structure JavaScript code into application code (file app.js) and UI code (file app.ui.js).
+* Abstraction of the UI library used, to make most of the UI code reusable and independent of the current framework.
+* How to use different JavaScript UI libraries in a MoSync hybrid app.
+* How to use NativeUI from JavaScript, to create a highly performant UI in a hybrid app.
+* How to handle the back button in an application (on Android devices).
