@@ -13,7 +13,7 @@
 require "fileutils"
 
 # JavaScript files to be copied.
-FilesToCopy = [
+JSFilesToCopy = [
   "js/mosync.file.js",
   "js/mosync.mock.js",
   "js/app.js",
@@ -22,22 +22,37 @@ FilesToCopy = [
   "js/wormhole.js"
 ]
 
+# C++ files to be copied.
+CPPFilesToCopy = [
+  "cpp/main.cpp",
+  "cpp/FileMessageHandler.h",
+  "cpp/FileMessageHandler.cpp"
+]
+
 # Target directories.
 CopyTargets = [
-  "../TwitterReaderIUI/LocalFiles/js/"
+  "../TwitterReaderIUI/",
+  "../TwitterReaderJQueryMobile/"
 ]
 
 # Copy the files.
 def copyFiles
-  dirList = CopyTargets
-  fileList = FilesToCopy
-  dirList.each do |dirName|
-    if(!File.exist?(dirName))
-      FileUtils.mkdir_p(dirName)
+  CopyTargets.each do |projectPath|
+    copyFilesTo(
+	  projectPath + "LocalFiles/js/",
+      JSFilesToCopy)
+    copyFilesTo(
+	  projectPath,
+      CPPFilesToCopy)
+  end
+end
+
+def copyFilesTo(path, files)
+  files.each do |fileName|
+    if(!File.exist?(path))
+      FileUtils.mkdir_p(path)
     end
-    fileList.each do |fileName|
-      FileUtils.cp(fileName, dirName)
-    end
+    FileUtils.cp(fileName, path)
   end
 end
 

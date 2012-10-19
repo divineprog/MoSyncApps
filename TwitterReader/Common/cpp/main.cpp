@@ -14,10 +14,7 @@
  */
 
 #include <Wormhole/HybridMoblet.h>
-
 #include "FileMessageHandler.h"   // Custom File API.
-#include "FileMessageHandler.cpp" // Custom File API implementation.
-
 #include "MAHeaders.h"
 
 // Namespaces we want to access.
