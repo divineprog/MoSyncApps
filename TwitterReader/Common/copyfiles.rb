@@ -2,13 +2,11 @@
 # File: copyjs.rb
 # Author: Mikael Kindborg
 #
-# Copy files used by the TwitterReader app
-# to the different projects. In MoSync C/C++
-# files can be included from a different
-# directory, but wil JavaScript files, they
-# must go in the LocalFiles folder of the
-# project, therefore we copy these files
-# using this script, to avoid code duplication.
+# This script copies files used by all versions of
+# the TwitterReader app to the different project
+# directories. Sharing JavaScript source code is
+# curently not supported by MoSync, which is why
+# the copy solution is taken to avoid code duplictaion.
 #
 require "fileutils"
 
@@ -18,7 +16,6 @@ JSFilesToCopy = [
   "js/mosync.mock.js",
   "js/app.js",
   "js/app.ui.js",
-  "js/jqmobi.js",
   "js/wormhole.js"
 ]
 

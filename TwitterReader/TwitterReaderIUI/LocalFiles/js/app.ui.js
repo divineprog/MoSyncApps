@@ -29,22 +29,14 @@ app.ui = (function()
 		}
 	};
 
-	/**
-	 * Get a DOM element by ID.
-	 */
-	ui.get = function(id)
-	{
-		return document.getElementById(id);
-	};
-
 	ui.getUserNameField = function()
 	{
-		return ui.get("userNameField").value;
+		return $("#userNameField").val();
 	};
 
 	ui.setUserNameField = function(name)
 	{
-		ui.get("userNameField").value = name;
+		return $("#userNameField").val(name);
 	};
 
 	/**
@@ -53,8 +45,7 @@ app.ui = (function()
 	 */
 	ui.showTweetListUserName = function(user)
 	{
-		var heading = ui.get("pageTitle");
-		heading.innerHTML = user;
+		$("#pageTitle").html(user);
 	};
 
 	/**
@@ -62,8 +53,7 @@ app.ui = (function()
 	 */
 	ui.showLoadingIndicator = function()
 	{
-		var resultsList = ui.get("tweetList");
-		resultsList.innerHTML = "<li>Loading...</li>";
+		$("#tweetList").html("<li>Loading...</li>");
 	};
 
 	/**
@@ -117,7 +107,9 @@ app.ui = (function()
 	ui.showTweetList = function(tweets)
 	{
 		var results = "";
-		if ((!tweets) || (tweets.length === 0) || (tweets.error === "Not found"))
+		if ((!tweets) ||
+			(tweets.length === 0) ||
+			(tweets.error === "Not found"))
 		{
 			results = "<li>No tweets found</li>";
 		}
@@ -128,7 +120,7 @@ app.ui = (function()
 				results += "<li>" + tweets[i].text + "</li>";
 			}
 		}
-		ui.get("tweetList").innerHTML = results;
+		$("#tweetList").html(results);
 	};
 
 	/**
@@ -181,7 +173,6 @@ app.ui = (function()
 	 */
 	ui.displayFavouriteUsers = function(userData)
 	{
-		
 		var users = app.parseFavouriteUsers(userData);
 		var list = "";
 		for (var i = 0; i < users.length; ++i)
@@ -192,7 +183,7 @@ app.ui = (function()
 				users[i] +
 				"</a></li>";
 		}
-		ui.get("favouriteList").innerHTML = list;
+		$("#favouriteList").html(list);
 	};
 
 	/**

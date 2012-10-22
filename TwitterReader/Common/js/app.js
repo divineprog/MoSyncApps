@@ -34,6 +34,10 @@ var app = (function()
 			console.log("@@@@ getTweetsForUser 2");
 			callbackFun(tweets);
 			console.log("@@@@ getTweetsForUser 3");
+		}).error(function(jqXHR, textStatus, errorThrown)
+		{
+			console.log("@@@@ getJSON error: " + textStatus);
+			alert("getJSON error: " + textStatus);
 		});
 
 		console.log("@@@@ getTweetsForUser 4");

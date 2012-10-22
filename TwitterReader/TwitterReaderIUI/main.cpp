@@ -13,6 +13,7 @@
  * implemented in C++.
  */
 
+#include <conprint.h>
 #include <Wormhole/HybridMoblet.h>
 #include "FileMessageHandler.h"   // Custom File API.
 #include "MAHeaders.h"
@@ -63,7 +64,9 @@ public:
 	 */
 	void keyPressEvent(int keyCode, int nativeCode)
 	{
-		if (MAK_MENU == keyCode)
+		lprintfln("@@@ keyPressEvent: %i %i\n", keyCode, nativeCode);
+
+		if (MAK_MENU == keyCode || 0 == keyCode)
 		{
 			reloadPage();
 		}
