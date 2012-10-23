@@ -158,10 +158,11 @@ void FileMessageHandler::handleLog(Wormhole::MessageStream& message)
 /**
  * Calls a JavaScript callback function using the "callbackId"
  * parameter. The callbackId is supplied automatically when
- * using the mosync.bridge.sendJSON function.
+ * calling mosync.bridge.send wuth a callback function.
+ * @param message The message stream from which to get the
+ * callback id.
  * @param result A string that contains the data to be returned
  * to the JavaScript callback function.
- * @return true on success, false on error.
  */
 void FileMessageHandler::replyString(
 	Wormhole::MessageStream& message,
@@ -181,10 +182,11 @@ void FileMessageHandler::replyString(
 /**
  * Calls a JavaScript callback function using the "callbackId"
  * parameter. The callbackId is supplied automatically when
- * using the mosync.bridge.sendJSON function.
+ * calling mosync.bridge.send wuth a callback function.
+ * @param message The message stream from which to get the
+ * callback id.
  * @param result A boolean to be returned
  * to the JavaScript callback function.
- * @return true on success, false on error.
  */
 void FileMessageHandler::replyBoolean(Wormhole::MessageStream& message, bool result)
 {
@@ -204,10 +206,11 @@ void FileMessageHandler::replyBoolean(Wormhole::MessageStream& message, bool res
 
 /**
  * Calls a JavaScript callback function using the "callbackId"
- * parameter. Returns null to the callback function.
- * The callbackId is supplied automatically when
- * using the mosync.bridge.sendJSON function.
- * @return true on success, false on error.
+ * parameter. The callbackId is supplied automatically when
+ * calling mosync.bridge.send wuth a callback function.
+ * Returns null to the callback function.
+ * @param message The message stream from which to get the
+ * callback id.
  */
 void FileMessageHandler::replyNull(Wormhole::MessageStream& message)
 {
