@@ -1,6 +1,6 @@
 //===============================================
 //This wormhole.js is compatible with
-// MoSync 3.1
+// MoSync 3.2
 //===============================================
 
 // =============================================================
@@ -57,6 +57,27 @@ var mosync = (function()
 
 	mosync.isWindowsPhone =
 		navigator.userAgent.indexOf("Windows Phone OS") != -1;
+
+	// Application functions.
+
+	mosync.app = {};
+
+	/**
+	 * Exit the application.
+	 * Supported on Android. Not supported on iOS.
+	 */
+	mosync.app.exit = function()
+	{
+		mosync.bridge.send(["MoSync", "ExitApplication"]);
+	}
+
+	/**
+	 * Send application to background.
+	 */
+	mosync.app.sendToBackground = function()
+	{
+		mosync.bridge.send(["MoSync", "SendToBackground"]);
+	}
 
 	// Alerts and logging.
 
@@ -512,6 +533,17 @@ var mosync = (function()
 	// Return the library object.
 	return mosync;
 })();
+
+// Send OpenWormhole message to C++ when document is loaded.
+document.addEventListener(
+	"DOMContentLoaded",
+	function()
+	{
+		// This signals that the document is loaded and Wormhole
+		// is ready be initialized.
+		mosync.bridge.send(["MoSync", "OpenWormhole"]);
+	},
+	false);
 
 // =============================================================
 //
@@ -1169,7 +1201,13 @@ PhoneGap.onDeviceReady = new PhoneGap.Channel('onDeviceReady');
 
 
 // Array of channels that must fire before "deviceready" is fired
-PhoneGap.deviceReadyChannelsArray = [ PhoneGap.onPhoneGapReady, PhoneGap.onPhoneGapInfoReady, PhoneGap.onPhoneGapConnectionReady];
+// MOSYNC: Added PhoneGap.onNativeReady to channels array to fix
+// bug that caused onDeviceReady to fire too early.
+PhoneGap.deviceReadyChannelsArray = [
+	PhoneGap.onPhoneGapReady,
+	PhoneGap.onPhoneGapInfoReady,
+	PhoneGap.onPhoneGapConnectionReady,
+	PhoneGap.onNativeReady];
 
 // Hashtable of user defined channels that must also fire before "deviceready" is fired
 PhoneGap.deviceReadyChannelsMap = {};
@@ -5178,7 +5216,7 @@ mosync.MAW_LABEL = "Label";
 mosync.MAW_EDIT_BOX = "EditBox";
 
 /**
-* @brief A list view is a vertical list of widgets that is also scrollable.
+* @brief A list view is a vertical list of widgets that is also scrollable. See \ref WidgetListViewProperties "List view properties" for the properties available.
 */
 mosync.MAW_LIST_VIEW = "ListView";
 
@@ -6480,6 +6518,22 @@ mosync.MAW_LIST_VIEW_ITEM_FONT_SIZE = "fontSize";
 * \endcode
 */
 mosync.MAW_LIST_VIEW_ITEM_FONT_HANDLE = "fontHandle";
+
+/**
+* @brief Enforces the focus on the list. Generally needed when for some reason the list looses it's focus.
+*
+* @validvalue None needed.
+*
+* Platform: Android.
+*
+* @setonly
+*
+* @par Example
+* \code
+*	maWidgetSetProperty(listViewHandle, MAW_LIST_VIEW_REQUEST_FOCUS, "");
+* \endcode
+*/
+mosync.MAW_LIST_VIEW_REQUEST_FOCUS = "requestFocus";
 
 /**
 * @brief Set or get the checked state of the checkbox.
@@ -8245,15 +8299,26 @@ mosync.resource.imageDownloadFinished = function(imageHandle)
 };
 
 /**
- * Send a log message to a remote server. This is a useful way
- * to display debug info when developing/testing on a device.
+ * Send a log message to a remote server. This is useful for
+ * displaying debug info when developing/testing on a device.
+ *
+ * When using Reload, the Reload Client is set up to send log
+ * messages to the Reload Server. Nothing needs to be written
+ * or configured in C++ in this case.
+ *
+ * If you wish to implement your own logging handler, you do this
+ * in C++ by creating a subclass of class Wormhole::LogMessageListener,
+ * implementing method onLogMessage, and then setting the listener
+ * using Wormhole::ResourceMessageHandler::setLogMessageListener().
+ * See the implementation of the Reload Client for an example of this.
  *
  * @param message The message to be sent, for example "Hello World".
- * @param url Optional parameter the specifies the remove server
- * to handle the log request, for example: "http://localhost:8282/log/".
+ *
+ * @param url Optional string parameter that specifies url of the
+ * remote server that should handle the log request, for example:
+ * "http://localhost:8282/remoteLogMessage/"
  * If this parameter is not supplied or set to null, "undefined" will
- * be passed to the C++ message handler, and the url set in C++
- * code will be used.
+ * be passed to the C++ log message handler.
  */
 mosync.resource.sendRemoteLogMessage = function(message, url)
 {
@@ -8271,10 +8336,11 @@ mosync.resource.sendRemoteLogMessage = function(message, url)
 };
 
 /**
- * Short alias for mosync.resource.sendRemoteLogMessage.
- * Set the url of the logging service in C++ code, then
- * just use mosync.rlog("Hello World") in your JS code.
- * "rlog" is short for "remote log".
+ * Short alias for mosync.resource.sendRemoteLogMessage
+ * ("rlog" is short for "remote log").
+ * If you use Reload, you can call mosync.rlog like this:
+ * mosync.rlog("Hello World");
+ * The log message will show up in the Reload user interface.
  */
 mosync.rlog = mosync.resource.sendRemoteLogMessage;
 
@@ -9151,7 +9217,7 @@ mosync.nativeui.NativeWidgetElement = function(widgetType, widgetID, params,
 				{
 					if(self.childList[index] ==  childID)
 					{
-						self.childList.splic(index,1);
+						self.childList.splice(index,1);
 					}
 				}
 				mosync.nativeui.maWidgetRemoveChild(childID, successCallback,
@@ -9594,6 +9660,30 @@ mosync.nativeui.getElementById = function(elementID)
 };
 
 /**
+ * Constant to be used to reference the main WebView in an app
+ * when calling mosync.nativeui.callJS().
+ */
+mosync.nativeui.MAIN_WEBVIEW = 0;
+
+/**
+ * Evaluate JavaScript code in another WebView. This provides a
+ * way to pass messages and communicate between WebViews.
+ *
+ * @param webViewHandle The MoSync handle of the WebView widget.
+ * Use mosync.nativeui.MAIN_WEBVIEW to refer to the main WebView
+ * in the application (this is the hidden WebView in a JavaScript
+ * NativeUI app).
+ * @param script A string with JavaScript code.
+ */
+mosync.nativeui.callJS = function(webViewHandle, script)
+{
+	mosync.bridge.send([
+		"CallJS",
+		"" + webViewHandle,
+		script]);
+};
+
+/**
  * An internal function that returns the correct property name Used to overcome
  * case sensitivity problems in browsers.
  *
@@ -9911,6 +10001,8 @@ mosync.nativeui.showScreen = function(screenID) {
  * Initializes the UI system and parsing of the XML input.
  * This function should be called when the document body is loaded.
  *
+ * @return true on success, false on error.
+ *
  * \code
  *  <!-- The function can be called in the initialization phase of HTML document.-->
  *  <body onload="mosync.nativeui.initUI()">
@@ -9924,14 +10016,20 @@ mosync.nativeui.showScreen = function(screenID) {
  *  //Do something, and show your main screen
  *  }
  * \endcode
- *
- *
  */
 mosync.nativeui.initUI = function() {
 	var MoSyncDiv = document.getElementById("NativeUI");
+	if (!MoSyncDiv) {
+		// TODO: Add log error message.
+		return false;
+	}
 	MoSyncDiv.style.display = "none"; //hide the Native Container
 	var MoSyncNodes = document.getElementById("NativeUI").childNodes;
-	for ( var i = 1; i < MoSyncNodes.length; i++) {
+	if (!MoSyncNodes) {
+		// TODO: Add log error message.
+		return false;
+	}
+	for (var i = 1; i < MoSyncNodes.length; i++) {
 		if ((MoSyncNodes[i] != null) && (MoSyncNodes[i].tagName != undefined)) {
 			if (MoSyncNodes[i].id == null) {
 				MoSyncNodes[i].id = "widget" + mosync.nativeui.widgetCounter;
@@ -9941,31 +10039,18 @@ mosync.nativeui.initUI = function() {
 		}
 	}
 	mosync.nativeui.showInterval = self.setInterval(
-			"mosync.nativeui.CheckUIStatus()", 100);
+		"mosync.nativeui.CheckUIStatus()", 100);
+	return true;
 };
 
-/*
+/**
  * Store the screen size information coming from MoSync
- * in the mosync.nativeui namespace.
+ * in the mosync.nativeui namespace. This function is
+ * called from C++.
  */
-if (typeof mosyncScreenWidth != "undefined" &&
-	typeof mosyncScreenHeight != "undefined")
-{
-	mosync.nativeui.screenWidth = mosyncScreenWidth;
-	mosync.nativeui.screenHeight = mosyncScreenHeight;
-}
-else
-{
-	try
-	{
-		mosync.nativeui.screenWidth = window.screen.availWidth;
-		mosync.nativeui.screenHeight = window.screen.availHeight;
-	}
-	catch (error)
-	{
-		mosync.nativeui.screenWidth = window.innerWidth;
-		mosync.nativeui.screenHeight = window.innerHeight;
-	}
+mosync.nativeui.setScreenSize = function(width, height) {
+	mosync.nativeui.screenWidth = width;
+	mosync.nativeui.screenHeight = height;
 }
 
 // =============================================================

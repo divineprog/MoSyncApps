@@ -1,26 +1,19 @@
 /**
  * @file main.cpp
  *
- * This file contains the support code at the C++ level for an HTML5/JS
- * application that can access device services from JavaScript.
+ * This app demonstrates how to make a hybrid app that uses the
+ * MoSync Database C API. The app itself is a small game.
+ * More information is given in the tutorial document, which
+ * is available in the Tutorial folder (and also published on
+ * www.mosync.com).
  *
- * You don't need to change anything in this code file unless you
- * wish to add support for functions not available out-of-the box
- * in wormhole.js.
- *
- * When reading the code below, it is good to know that there are
- * two message formats: JSON and string streams. String streams are
- * generally faster. See comments in the code below for further details.
- * PhoneGap uses JSON messages, NativeUI uses string streams.
+ * This file contains the C++ support code for the app. The main part
+ * if the implementation of the database services for the app. These
+ * are invoked from JavScript to store and read data.
  */
 
-#include <Wormhole/WebAppMoblet.h>
-#include <Wormhole/MessageProtocol.h>
-#include <Wormhole/MessageStream.h>
-#include <Wormhole/Libs/JSONMessage.h>
-#include <Wormhole/Libs/PhoneGap/PhoneGapMessageHandler.h>
-#include <Wormhole/Libs/JSNativeUI/NativeUIMessageHandler.h>
-#include <Wormhole/Libs/JSNativeUI/ResourceMessageHandler.h>
+#include <conprint.h>
+#include <Wormhole/HybridMoblet.h>
 #include "MAHeaders.h"
 
 // Namespaces we want to access.
@@ -28,208 +21,293 @@ using namespace MAUtil; // Class Moblet
 using namespace NativeUI; // WebView widget.
 using namespace Wormhole; // Wormhole library.
 
+
+/**
+ * Utility class that simplifies using the Database API.
+ */
+class DBUtil
+{
+public:
+	/**
+	 * Open a database.
+	 * @return Handle to database, < 0 on error.
+	 */
+	static MAHandle openDatabase(const char* fileName)
+	{
+		// Open the database. It will be created if it does not exist.
+		// The database will be created in the local directory of the
+		// application.
+		MAUtil::String path = DBUtil::getLocalPath();
+		path += fileName;
+		MAHandle db = maDBOpen(path.c_str());
+		return db;
+	}
+
+	/**
+	 * Get the path to the local file system.
+	 * @return Path that ends with a slash.
+	 */
+	static String getLocalPath()
+	{
+		int bufferSize = 1024;
+		char buffer[bufferSize];
+
+		int size = maGetSystemProperty(
+			"mosync.path.local",
+			buffer,
+			bufferSize);
+
+		// If there was an error, return default root path.
+		if (size < 0 || size > bufferSize)
+		{
+			return "/";
+		}
+
+		return buffer;
+	}
+
+	/**
+	 * Utility function that gets a text field as a string, using the
+	 * maDBCursorGetColumnText function.
+	 * @param cursor Handle to a cursor object.
+	 * @param column Zero-based index to the column to retrieve.
+	 * @param path Reference to string that will receive the field data.
+	 * @return MA_DB_OK on success, MA_DB_NULL if the field value is NULL,
+	 * or MA_DB_ERROR on error.
+	 */
+	static int getColumnString(MAHandle cursor, int column, String& text)
+	{
+		int bufferSize = 1024;
+		char buffer[bufferSize];
+
+		// Get the text value of the field.
+		int size = maDBCursorGetColumnText(cursor, column, buffer, bufferSize);
+
+		// If it went ok, copy text to result string.
+		if (size >= 0 && size < bufferSize)
+		{
+			// The text buffer is not zero terminated, so we do that now.
+			buffer[size] = 0;
+
+			// Copy to result string.
+			text = buffer;
+
+			return MA_DB_OK;
+		}
+		else if (MA_DB_NULL == size)
+		{
+			return MA_DB_NULL;
+		}
+		else
+		{
+			return MA_DB_ERROR;
+		}
+	}
+
+};
+
 /**
  * The application class.
  */
-class MyMoblet : public WebAppMoblet
+class AppMoblet : public HybridMoblet
 {
 public:
-	MyMoblet() :
-		mPhoneGapMessageHandler(getWebView()),
-		mNativeUIMessageHandler(getWebView()),
-		mResourceMessageHandler(getWebView())
+	/**
+	 * Constructor.
+	 */
+	AppMoblet()
 	{
-		// Extract files in LocalFiles folder to the device.
-		extractFileSystem();
-
-		// Enable message sending from JavaScript to C++.
-		enableWebViewMessages();
-
-		// Show the WebView that contains the HTML/CSS UI
-		// and the JavaScript code.
-		getWebView()->setVisible(true);
-		getWebView()->enableZoom();
-
-		// The page in the "LocalFiles" folder to
-		// show when the application starts.
+		// Show the start page. This will also perform initialization if needed.
 		showPage("index.html");
 
-		// Send the Device Screen size to JavaScript.
-		MAExtent scrSize = maGetScrSize();
-		int width = EXTENT_X(scrSize);
-		int height = EXTENT_Y(scrSize);
-		char buf[512];
-		sprintf(
-			buf,
-			"{mosyncScreenWidth=%d; mosyncScreenHeight = %d;}",
-			width,
-			height);
-		callJS(buf);
+		// The beep sound is defined in file "Resources/Resources.lst".
+		setBeepSound(BEEP_WAV);
 
-		// Set the beep sound. This is defined in the
-		// Resources/Resources.lst file. You can change
-		// this by changing the sound file in that folder.
-		mPhoneGapMessageHandler.setBeepSound(BEEP_WAV);
+		// Turn on zooming of the UI.
+		getWebView()->enableZoom();
 
-		// Initialize PhoneGap.
-		mPhoneGapMessageHandler.initializePhoneGap();
+		// Register functions to handle custom messages sent from JavaScript.
+		addMessageFun(
+			"GetScore",
+			(FunTable::MessageHandlerFun)&AppMoblet::serviceGetScore);
+		addMessageFun(
+			"SetScore",
+			(FunTable::MessageHandlerFun)&AppMoblet::serviceSetScore);
+
+		// Open/initialize the database.
+		openDatabase();
 	}
 
-	virtual ~MyMoblet()
+	/**
+	 * Destructor.
+	 */
+	virtual ~AppMoblet()
 	{
 		// Add cleanup code as needed.
+		closeDatabase();
+	}
+
+	/**
+	 * Open the database and create tables and rows.
+	 */
+	void openDatabase()
+	{
+		// Open the database.
+		mDB = DBUtil::openDatabase("GameDB");
+
+		// Do we have any rows?
+		MAHandle cursor = maDBExecSQL(mDB, "SELECT * FROM player");
+		if (cursor < 1)
+		{
+			// No rows exist, initialize the database.
+			maDBExecSQL(mDB, "DROP TABLE IF EXISTS player");
+			maDBExecSQL(mDB, "CREATE TABLE player (name, score)");
+			maDBExecSQL(mDB, "INSERT INTO player VALUES ('Me', 0)");
+			maDBExecSQL(mDB, "INSERT INTO player VALUES ('You', 0)");
+		}
+		else
+		{
+			// If we got a valid cursor data exists, but we need
+			// to release the cursor.
+			maDBCursorDestroy(cursor);
+		}
+	}
+
+	void closeDatabase()
+	{
+		maDBClose(mDB);
+	}
+
+	/**
+	 * Get get the score of a named player and return the result
+	 * to a JavaScript callback function.
+	 * @param message
+	 */
+	void serviceGetScore(Wormhole::MessageStream& message)
+	{
+		lprintfln("@@@ serviceGetScore");
+
+		// Get the name of the player.
+		const char* name = message.getNext();
+
+		// Query the score for the given name.
+		char query[128];
+		sprintf(query, "SELECT score FROM player WHERE name='%s'", name);
+		MAHandle cursor = maDBExecSQL(mDB, query);
+		if ((cursor > 0) && (MA_DB_OK == maDBCursorNext(cursor)))
+		{
+			// Read the score into a String object.
+			String score;
+			int result = DBUtil::getColumnString(
+				cursor, // Cursor handle.
+				0,      // Index of column (we have only one column in the
+				        // result, zero is the index of the first column).
+				score   // String set to the score value.
+				);
+			if (MA_DB_OK == result)
+			{
+				lprintfln("@@@ serviceGetScore result: %s", score.c_str());
+
+				// Return result to JavaScript and exit this function.
+				callCallbackWithResult(message, score.c_str(), true);
+				maDBCursorDestroy(cursor);
+				return;
+			}
+			maDBCursorDestroy(cursor);
+		}
+
+		// Return error to JavaScript.
+		callCallbackWithResult(message, "Could not read score", false);
+	}
+
+	/**
+	 * Set get the score of a named player.
+	 * @param message
+	 */
+	void serviceSetScore(Wormhole::MessageStream& message)
+	{
+		lprintfln("@@@ serviceSetScore");
+
+		// Get the name of the player.
+		const char* name = message.getNext();
+
+		// Get the new score value.
+		const char* score = message.getNext();
+
+		// Update the score for the given name.
+		char query[128];
+		sprintf(query, "UPDATE player SET score=%s WHERE name='%s'", score, name);
+		MAHandle result = maDBExecSQL(mDB, query);
+		if (MA_DB_OK == result)
+		{
+			callCallbackWithResult(message, "Updated score", true);
+		}
+		else
+		{
+			callCallbackWithResult(message, "Failed to update score", false);
+		}
+	}
+
+	/**
+	 * Calls a JavaScript callback function using the "callbackId"
+	 * parameter. The callbackId is supplied automatically when
+	 * calling mosync.bridge.send wuth a callback function.
+	 * @param message The message stream from which to get the
+	 * callback id.
+	 * @param result A string that contains the data to be returned
+	 * to the JavaScript callback function.
+	 * @param success Success value passed back to JavaScript, used
+	 * to indicate success or error of a call.
+	 */
+	void callCallbackWithResult(
+		Wormhole::MessageStream& message,
+		const String& result,
+		bool success)
+	{
+		// Get the callbackID parameter.
+		const char* callbackId = message.getNext();
+
+		// Call JavaScript reply handler.
+		String successValue = success ? "true" : "false";
+		String script = "mosync.bridge.reply(";
+		script += callbackId;
+		script += ",'" + result + "'";
+		script += "," + successValue + ")";
+
+		lprintfln("@@@ JS: %s", script.c_str());
+
+		message.getWebView()->callJS(script);
+	}
+
+	void reloadPage()
+	{
+		char* s = "@@@ Reloading page";
+		maWriteLog(s, strlen(s));
+		showPage("http://192.168.0.104:4042/index.html");
+		//showPage("js/web-app/index.html");
 	}
 
 	/**
 	 * This method is called when a key is pressed.
-	 * Forwards the event to PhoneGapMessageHandler.
 	 */
 	void keyPressEvent(int keyCode, int nativeCode)
 	{
-		// Forward to PhoneGap MessageHandler.
-		mPhoneGapMessageHandler.processKeyEvent(keyCode, nativeCode);
-	}
-
-	/**
-	 * This method handles messages sent from the WebView.
-	 *
-	 * Note that the data object will be valid only during
-	 * the life-time of the call of this method, then it
-	 * will be deallocated.
-	 *
-	 * @param webView The WebView that sent the message.
-	 * @param urlData Data object that holds message content.
-	 */
-	void handleWebViewMessage(WebView* webView, MAHandle data)
-	{
-		// Uncomment to print message data for debugging.
-		// You need to build the project in debug mode for
-		// the log output to be displayed.
-		//printMessage(data);
-
-		// Check the message protocol.
-		MessageProtocol protocol(data);
-		if (protocol.isMessageStreamJSON())
+		if (MAK_MENU == keyCode || 0 == keyCode)
 		{
-			handleMessageStreamJSON(webView, data);
-		}
-		else if (protocol.isMessageStream())
-		{
-			handleMessageStream(webView, data);
+			reloadPage();
 		}
 		else
 		{
-			lprintfln("@@@ MOSYNC: Undefined message protocol");
+			// This forwards the event to PhoneGapMessageHandler.
+			HybridMoblet::keyPressEvent(keyCode, nativeCode);
 		}
-	}
-
-	/**
-	 * Handles JSON messages. This is used by PhoneGap.
-	 *
-	 * You can send your own messages from JavaScript and handle them here.
-	 *
-	 * @param webView A pointer to the web view posting this message.
-	 * @param data The raw encoded JSON message array.
-	 */
-	void handleMessageStreamJSON(WebView* webView, MAHandle data)
-	{
-		// Create the message object. This parses the message data.
-		// The message object contains one or more messages.
-		JSONMessage message(webView, data);
-
-		// Loop through messages.
-		while (message.next())
-		{
-			// This detects the PhoneGap protocol.
-			if (message.is("PhoneGap"))
-			{
-				mPhoneGapMessageHandler.handlePhoneGapMessage(message);
-			}
-
-			// Here you can add your own message handing as needed.
-		}
-	}
-
-	/**
-	 * Handles string stream messages (generally faster than JSON messages).
-	 * This is used by the JavaScript NativeUI system.
-	 *
-	 * You can send your own messages from JavaScript and handle them here.
-	 *
-	 * @param webView A pointer to the web view posting this message.
-	 * @param data The raw encoded stream of string messages.
-	 */
-	void handleMessageStream(WebView* webView, MAHandle data)
-	{
-		// Create a message stream object. This parses the message data.
-		// The message object contains one or more strings.
-		MessageStream stream(webView, data);
-
-		// Pointer to a string in the message stream.
-		const char* p;
-
-		// Process messages while there are strings left in the stream.
-		while (p = stream.getNext())
-		{
-			if (0 == strcmp(p, "NativeUI"))
-			{
-				//Forward NativeUI messages to the respective message handler
-				mNativeUIMessageHandler.handleMessage(stream);
-			}
-			else if (0 == strcmp(p, "Resource"))
-			{
-				//Forward Resource messages to the respective message handler
-				mResourceMessageHandler.handleMessage(stream);
-			}
-			else if (0 == strcmp(p, "close"))
-			{
-				// Close the application (calls method in class Moblet).
-				close();
-			}
-
-			// Here you can add your own message handing as needed.
-		}
-	}
-
-	/**
-	 * For debugging.
-	 */
-	void printMessage(MAHandle dataHandle)
-	{
-		// Get length of the data, it is not zero terminated.
-		int dataSize = maGetDataSize(dataHandle);
-
-		// Allocate buffer for string data.
-		char* stringData = (char*) malloc(dataSize + 1);
-
-		// Get the data.
-		maReadData(dataHandle, stringData, 0, dataSize);
-
-		// Zero terminate.
-		stringData[dataSize] = 0;
-
-		// Print unparsed message data.
-		maWriteLog("@@@ MOSYNC Message:", 19);
-		maWriteLog(stringData, dataSize);
-
-		free(stringData);
 	}
 
 private:
 	/**
-	 * Handler for PhoneGap messages.
+	 * Handle to the database object.
 	 */
-	PhoneGapMessageHandler mPhoneGapMessageHandler;
-
-	/**
-	 * Handler for NativeUI messages
-	 */
-	NativeUIMessageHandler mNativeUIMessageHandler;
-
-	/**
-	 * Handler for resource messages used for NativeUI
-	 */
-	ResourceMessageHandler mResourceMessageHandler;
+	MAHandle mDB;
 };
 
 /**
@@ -239,6 +317,6 @@ private:
  */
 extern "C" int MAMain()
 {
-	Moblet::run(new MyMoblet());
+	(new AppMoblet())->enterEventLoop();
 	return 0;
 }
