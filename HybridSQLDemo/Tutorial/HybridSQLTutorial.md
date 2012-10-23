@@ -29,7 +29,7 @@ You challenge the app and can affect the outcome by taking a low risk or a high 
 
 Here is a screenshot:
 
-![Hybrid SQL Demo Screenshot](https://raw.github.com/divineprog/MoSyncApps/master/HybridSQLDemo/Tutorial/HybridSQLDemo.png)
+![Hybrid SQL Demo Screenshot](https://raw.github.com/divineprog/MoSyncApps/master/HybridSQLDemo/Tutorial/HybridSQLDemo.jpg)
 
 The source code is available on GitHub. The JavaScript layer of the app is in file [index.html](https://github.com/divineprog/MoSyncApps/blob/master/HybridSQLDemo/LocalFiles/index.html). The  C++ layer is in file [main.cpp](https://github.com/divineprog/MoSyncApps/blob/master/HybridSQLDemo/main.cpp).
 
@@ -64,9 +64,9 @@ For example, if we wish to get the current score of the player, here is the code
 
 By comparison, here is the JavaScript code we could write when invoking a C++ service-oriented API:
 
-    function getScore(name, fun)
+    function getScore(name, callbackFun)
     {
-        mosync.bridge.send(["Custom", "GetScore", name], fun);
+        mosync.bridge.send(["Custom", "GetScore", name], callbackFun);
     }
 
 In this approach, we don't care about the details of how database queries are performed. All we ask for, is for our callback function to get called with the score of the player with the name we provide. The details are taken care of by the C++ layer.
@@ -114,11 +114,13 @@ Finally close the database:
 
     maDBClose(db);
 
-Note that the above code contains no error checking, see the [Database C API guide](http://www.mosync.com/documentation/manualpages/sql-database-api) for further details on how to handle errors.
+Note that the above code contains no error checking, see the [Database C API guide](http://www.mosync.com/documentation/manualpages/sql-database-api) for further examples and details on how to handle errors.
 
 ## How the JavaScript to C++ bridge works
 
-The recent nightly builds of the MoSync SDK has a new binding mechanism that makes it easy to invoke C++ functions from JavaScript. This mechanism will also be available in the upcoming release of MoSync SDK 3.2. If you want to use the mechanism available in MoSync SDK 3.1, check out the tutorial [Extending HTML5 Apps with C++](http://www.mosync.com/documentation/manualpages/how-communicate-between-javascript-and-c-mosync). _Note that the code in this tutorial uses the new mechanism_ (only available in nightly builds until MoSync SDK 3.2 is released).
+The recent nightly builds of the MoSync SDK has a new binding mechanism that makes it easy to invoke C++ functions from JavaScript. This mechanism will also be available in the upcoming release of MoSync SDK 3.2. If you want to use the mechanism available in MoSync SDK 3.1, check out the tutorial [Extending HTML5 Apps with C++](http://www.mosync.com/documentation/manualpages/how-communicate-between-javascript-and-c-mosync). 
+
+_Note that the code in this tutorial uses the new mechanism_ (only available in [nightly builds](http://www.mosync.com/pages/previous-versions-source-code-and-night-builds) until MoSync SDK 3.2 is released).
 
 From JavaScript we use mosync.bridge.send to invoke C++ code. This function takes two parameters, an array of strings, and an optional callback function. When using the new binding mechanism, the first string in the array always must be "Custom" (indicating a custom call is being made). Here is an example:
 
@@ -126,9 +128,9 @@ From JavaScript we use mosync.bridge.send to invoke C++ code. This function take
     
 In the C++ code, the "Vibrate" message is bound to a C++ function using the following code:
 
-		addMessageFun(
-			  "Vibrate",
-			  (FunTable::MessageHandlerFun)&MyMoblet::vibrate);
+    addMessageFun(
+        "Vibrate",
+        (FunTable::MessageHandlerFun)&MyMoblet::vibrate);
 
 This will call the function _vibrate_ in class MyMoblet when the message "Vibrate" is sent from JavaScript. The function pointer type _FunTable::MessageHandlerFun_ is used for all functions invoked using this mechanism.
 
@@ -139,11 +141,88 @@ And here is how the _vibrate_ function can be implemented:
         maVibrate(500);
     }
 
-The example program HybridSQLDemo uses this mechanism. Look at the source code in the file [main.cpp](https://github.com/divineprog/MoSyncApps/blob/master/HybridSQLDemo/main.cpp) to examine the details. 
+The example program HybridSQLDemo uses this mechanism. Read on in the next section for further details.
 
-## Implementation of database servcies
+## Implementation of database services
 
 In the file [main.cpp](https://github.com/divineprog/MoSyncApps/blob/master/HybridSQLDemo/main.cpp) you will also find the implementation of the database services used by the application.
 
-As an example, here is how the "GetScore" service is implemented:
+This file contains a class called DBUtil, which contains some static methods for simplifying the database code, and the main application class, called AppMoblet.
 
+In the constructor of AppMoblet, the bindings from JavaScript are created as follows:
+
+    addMessageFun(
+        "GetScore",
+        (FunTable::MessageHandlerFun)&AppMoblet::serviceGetScore);
+    addMessageFun(
+        "SetScore",
+        (FunTable::MessageHandlerFun)&AppMoblet::serviceSetScore);
+
+Two services are exposed to JavaScript, "GetScore" and "SetScore".
+        
+As an example, here is how the "SetScore" service is implemented in C++, in [main.cpp](https://github.com/divineprog/MoSyncApps/blob/master/HybridSQLDemo/main.cpp):
+
+    void serviceSetScore(Wormhole::MessageStream& message)
+    {
+        // Get the name of the player.
+        const char* name = message.getNext();
+
+        // Get the new score value.
+        const char* score = message.getNext();
+
+        // Update the score for the given name.
+        char query[128];
+        sprintf(query, "UPDATE player SET score=%s WHERE name='%s'", score, name);
+        MAHandle result = maDBExecSQL(mDB, query);
+        if (MA_DB_OK == result)
+        {
+            callCallbackWithResult(message, "Updated score", true);
+        }
+        else
+        {
+            callCallbackWithResult(message, "Failed to update score", false);
+        }
+    }
+
+Note how _message.getNext()_ is used to retrieve a pointer to the next string in the message. The method _callCallbackWithResult_ is used to send the result back to JavaScript. It is also implemented in [main.cpp](https://github.com/divineprog/MoSyncApps/blob/master/HybridSQLDemo/main.cpp). Here is the code for this method:
+
+    void callCallbackWithResult(
+        Wormhole::MessageStream& message,
+        const String& result,
+        bool success)
+    {
+        // Get the callbackID parameter.
+        const char* callbackId = message.getNext();
+
+        // Call JavaScript reply handler.
+        String successValue = success ? "true" : "false";
+        String script = "mosync.bridge.reply(";
+        script += callbackId;
+        script += ",'" + result + "'";
+        script += "," + successValue + ")";
+
+        message.getWebView()->callJS(script);
+    }
+
+Here you can see an additional parameter that is passed from JavaScript, a callback id. This id is created when the _mosync.bridge.send_ function is called with a callback function. The id is then used with the function _mosync.bridge.reply_, which takes the callback id as its first parameter. The _callJS_ method of the web view then evaluates the JavaScript string, which calls this function and looks up the function that corresponds to the callback id, and invokes that function with the parameters we have supplied.
+
+Now, let's go back to JavaScript, and look at the function that invokes the C++ code for SetScore. It is found in file [index.html](https://github.com/divineprog/MoSyncApps/blob/master/HybridSQLDemo/LocalFiles/index.html):
+
+    function setScore(name, score, callbackFun)
+    {
+        mosync.bridge.send(
+            ["Custom", "SetScore", name, score],
+            callbackFun);
+    }
+
+Here you can see how the callback function is provided as the last parameter to _mosync.bridge.send_.
+
+## Where to go from here
+
+The discussion of the HybridSQLDemo app illustrates the following things:
+
+* How to create a hybrid application that uses both JavaScript and C++, and some of the design considerations involved in creating an application with multiple code layers.
+* How to invoke C++ code from JavaScript, pass parameters and pass results.
+* How to use the MoSync Database C API.
+
+When using the techniques discussed in this tutorial in your own apps, remeber that they are only available in [the latest nightly builds of the MoSync SDK](http://www.mosync.com/pages/previous-versions-source-code-and-night-builds) until MoSync SDK 3.2 is released.
