@@ -1,4 +1,4 @@
-<!-- # Using The MoSync SQL API in Hybrid Apps  -->
+# Using SQL in Hybrid Apps
 <!-- C:\md>perl Markdown.pl C:\MoSyncProjects\MoSyncApps\HybridSQLDemo\Tutorial\HybridSQLTutorial.md > output.txt -->
 
 <!--
