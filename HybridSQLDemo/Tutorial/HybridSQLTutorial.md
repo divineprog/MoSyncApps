@@ -15,21 +15,22 @@ The source code for this tutorial is available on [GitHub](https://github.com/di
 
 ## Background
 
-HTML5 has many useful features, but there can be times when you miss someting. By making a hybrid app, which combines JavaScript with native code, the missing functionality can be made available. In the case of the MoSync SDK, functionality not available in JavaScript can be implemented in C/C++.
+HTML5 has many useful features, but there can be times when you miss something. By making a hybrid app, which combines JavaScript with native code, the missing functionality can be made available. In the case of the MoSync SDK, functionality not available in JavaScript can be implemented in C/C++.
 
-MoSync has a C/C++ Database API (based on SQLite). Similar to Web SQL, this API provides functions for creating and querying SQL databases. To access the C/C++ Database API from JavaScript, we will use a binding mechanism available in the MoSync Wormhole API, which makes it straightforward to invoke C++ functions from JavaScript. You can use this invokation mechanism to add any custom C++ code to your hybrid app, not just database-related functionality.
+MoSync has a C/C++ Database API (based on SQLite). Similar to Web SQL, this API provides functions for creating and querying SQL databases. To access the C/C++ Database API from JavaScript, we will use a binding mechanism available in the MoSync Wormhole API, which makes it straightforward to invoke C++ functions from JavaScript. You can use this invocation mechanism to add any custom C++ code to your hybrid app, not just database-related functionality.
 
-Compared to the Web SQL API, the MoSync Database API gives you greater flexibility and a wider range of functionality. The Web SQL standard is currently not actively maitained by the W3C Working Group, which makes the MoSync Database API an attractive option, an independent database API you can use in your hybrid apps.
+Compared to the Web SQL API, the MoSync Database API gives you greater flexibility and a wider range of functionality. The Web SQL standard is currently not actively maintained by the W3C Working Group, which makes the MoSync Database API an attractive option, an independent database API you can use in your hybrid apps. Furthermore, WebSQL has limitations when it comes to the size of the database. On iOS, the limitation is 50MB per app, and that goes for all databases you have in total (if you use multiple databases). On Android, there may be various limitations depending on the version/brand of Android OS used on the device.
 
 ## Demo application
 
-The app HybridSQLDemo is a simple turn-based game of luck (much like playing by tossing a dice). The "dice" in the app is a "wheel" with numbers 1 tho 50. Whoever gets the highest number wins the current round, and the total score gets updated. This is the same app as we used in the [Web SQL tutorial](http://www.mosync.com/documentation/manualpages/using-web-sql-mosync-apps), but with a different database implementation.
+The app HybridSQLDemo is a simple turn-based game of luck (much like playing by tossing a dice). The "dice" in the app is a "wheel" with numbers 1 to 50. Whoever gets the highest number wins the current round, and the total score gets updated. This is the same app as we used in the [Web SQL tutorial](http://www.mosync.com/documentation/manualpages/using-web-sql-mosync-apps), but with a different database implementation.
 
 You challenge the app and can affect the outcome by taking a low risk or a high risk. With high risk, you can double your score, but the app gets to roll the wheel twice.
 
-Here is a screenshot:
+Here are screenshots from the app running on iOS and Android:
 
-![Hybrid SQL Demo Screenshot](https://raw.github.com/divineprog/MoSyncApps/master/HybridSQLDemo/Tutorial/HybridSQLDemo.jpg)
+![Hybrid SQL Demo iOS Screenshot](https://raw.github.com/divineprog/MoSyncApps/master/HybridSQLDemo/Tutorial/HybridSQLDemoIOS.jpg)
+![Hybrid SQL Demo Android Screenshot](https://raw.github.com/divineprog/MoSyncApps/master/HybridSQLDemo/Tutorial/HybridSQLDemoAndroid.jpg)
 
 The source code is available on GitHub. The JavaScript layer of the app is in file [index.html](https://github.com/divineprog/MoSyncApps/blob/master/HybridSQLDemo/LocalFiles/index.html). The  C++ layer is in file [main.cpp](https://github.com/divineprog/MoSyncApps/blob/master/HybridSQLDemo/main.cpp).
 
@@ -44,7 +45,7 @@ When using a layered architecture, like the Wormhole JavaScript/C++ framework, t
 
 These design alternatives exist, not only for the database API, but for almost any functionality in your app that you implement using a layered/hybrid approach. It is a question of how to divide the code between the JavaScript layer and the C++ layer.
 
-The first approach, to implement an API, would be similar to implementing the Web SQL API on top of MoSync, replacing the browser's implementation with our own MoSync version. This approach is of course the given choise if we would wish to make a generally reusable API that can be used in a wide spectrum of applications. But there are also drawbacks with going for the general solution.
+The first approach, to implement an API, would be similar to implementing the Web SQL API on top of MoSync, replacing the browser's implementation with our own MoSync version. This approach is of course the given choice if we would wish to make a generally reusable API that can be used in a wide spectrum of applications. But there are also drawbacks with going for the general solution.
 
 The time it takes to implement a generic library can be considerable. Either you have to implement an existing specification, which can be tricky to get right. And if you design your own API, the design itself can take time to get right. Then there is the need for testing, documenting and maintaining the API, all of which can steal time from actual application development. The risk is that your project will end up implementing an API, not an app! ;)
 
@@ -71,9 +72,9 @@ By comparison, here is the JavaScript code we could write when invoking a C++ se
 
 In this approach, we don't care about the details of how database queries are performed. All we ask for, is for our callback function to get called with the score of the player with the name we provide. The details are taken care of by the C++ layer.
 
-While the service-oriented approach usually is very application specific, it is a solution that is straightforward to implement and maintain. Furthermore, there can be performace issues to consider. By reducing the number of calls made between JavaScript and C++, performance can be improved. And code implemented in C++ could be faster than the corresponding JavaScript implementation would be. 
+While the service-oriented approach usually is very application specific, it is a solution that is straightforward to implement and maintain. Furthermore, there can be performance issues to consider. By reducing the number of calls made between JavaScript and C++, performance can be improved. And code implemented in C++ could be faster than the corresponding JavaScript implementation would be. 
 
-For the simplicity and usefullness of the service-oriented design, we will use this appraoch in the example app of this tutorial.
+For the simplicity and usefulness of the service-oriented design, we will use this approach in the example app of this tutorial.
 
 ## A tour of the MoSync Database C API
 
@@ -217,12 +218,14 @@ Now, let's go back to JavaScript, and look at the function that invokes the C++ 
 
 Here you can see how the callback function is provided as the last parameter to _mosync.bridge.send_.
 
-## Where to go from here
+## Wrapping up
 
 The discussion of the HybridSQLDemo app illustrates the following things:
 
 * How to create a hybrid application that uses both JavaScript and C++, and some of the design considerations involved in creating an application with multiple code layers.
 * How to invoke C++ code from JavaScript, pass parameters and pass results.
 * How to use the MoSync Database C API.
+
+If you compare the JavaScript code in the above example ([HybridSQLDemo](https://github.com/divineprog/MoSyncApps/blob/master/HybridSQLDemo/LocalFiles/index.html)) with the previous example ([WebSQLDemo](https://github.com/divineprog/MoSyncApps/blob/master/WebSQLDemo/LocalFiles/index.html)), you can see that most of the application logic and user interface code is left untouched. The major change is that the functionality for database access now is provided by two functions, _getScore_ and _setScore_, which provide calls into the C++ layer.
 
 When using the techniques discussed in this tutorial in your own apps, remeber that they are only available in [the latest nightly builds of the MoSync SDK](http://www.mosync.com/pages/previous-versions-source-code-and-night-builds) until MoSync SDK 3.2 is released.
