@@ -1,0 +1,1 @@
+This example uses jQuery Mobile 1.2.0
