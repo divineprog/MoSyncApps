@@ -32,7 +32,8 @@ public:
 	TwitterMoblet()
 	{
 		// Show the start page. This will also perform initialization if needed.
-		showPage("index.html");
+		//showPage("index.html"); // Used for production.
+		reloadPage() // Used for debugging/dynamic reload.
 
 		// The beep sound is defined in file "Resources/Resources.lst".
 		setBeepSound(BEEP_WAV);
@@ -51,12 +52,17 @@ public:
 		// Add cleanup code as needed.
 	}
 
+	/**
+	 * Simple support for dynamic reloading of the
+	 * app uding development.
+	 */
 	void reloadPage()
 	{
 		char* s = "@@@ Reloading page";
 		maWriteLog(s, strlen(s));
-		showPage("http://192.168.0.104:4042/index.html");
-		//showPage("js/web-app/index.html");
+		// Enter address of your HTML-sever where you have
+		// the application files.
+		showPage("http://192.168.0.157:4042/index.html");
 	}
 
 	/**
@@ -79,7 +85,6 @@ public:
 
 	void handleFileMessage(Wormhole::MessageStream& message)
 	{
-		maWriteLog("@@@1", 4);
 		mMessageHandler.handleMessage(message);
 	}
 

@@ -2,7 +2,9 @@
 * @file app.js
 * @author Mikael Kindborg
 *
-* Application code common to all TwitterReader apps.
+* Code for the application layer. The app is divided into
+* separate objects for the application logic (the app object)
+* and the user interface (the app.ui object).
 */
 
 /**
@@ -20,8 +22,6 @@ var app = (function()
 	 */
 	app.getTweetsForUser = function(user, callbackFun)
 	{
-		console.log("@@@@ getTweetsForUser 1");
-
 		// Create the Twitter url.
 		var twitterUrl =
 			"http://api.twitter.com/1/statuses/" +
@@ -31,16 +31,11 @@ var app = (function()
 		// Do ajax call to get an array of Tweets.
 		$.getJSON(twitterUrl, function(tweets)
 		{
-			console.log("@@@@ getTweetsForUser 2");
 			callbackFun(tweets);
-			console.log("@@@@ getTweetsForUser 3");
 		}).error(function(jqXHR, textStatus, errorThrown)
 		{
-			console.log("@@@@ getJSON error: " + textStatus);
 			alert("getJSON error: " + textStatus);
 		});
-
-		console.log("@@@@ getTweetsForUser 4");
 	};
 
 	/**
@@ -50,8 +45,6 @@ var app = (function()
 	 */
 	app.readFavouriteUsers = function(callbackFun)
 	{
-		console.log("@@@ readFavouriteUsers");
-
 		// Get path to local file directory, then
 		// read favourite users from that directory.
 		mosync.file.getLocalPath(function(path)
@@ -83,8 +76,6 @@ var app = (function()
 	 */
 	app.addFavouriteUser = function(userName, callbackFun)
 	{
-		console.log("@@@ addFavouriteUser");
-
 		// First read users, then add the new user name.
 		app.readFavouriteUsers(function(userData, filePath)
 		{

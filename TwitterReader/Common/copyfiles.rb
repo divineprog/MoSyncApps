@@ -29,7 +29,8 @@ CPPFilesToCopy = [
 # Target directories.
 CopyTargets = [
   "../TwitterReaderIUI/",
-  "../TwitterReaderJQueryMobile/"
+  "../TwitterReaderJQueryMobile/",
+  "../TwitterReaderJQMobi/"
 ]
 
 # Copy the files.

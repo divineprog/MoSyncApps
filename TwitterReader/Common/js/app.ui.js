@@ -2,18 +2,17 @@
 * @file app.ui.js
 * @author Mikael Kindborg
 *
-* UI code common to all TwitterReader apps.
+* This file contains UI code at a more abstract level.
+* The intention is to make it easier to switch UI libraries
+* without having to update/rewrite all the UI code.
+* Any specific UI code goes into index.html.
 */
 
-/**
- * UI code common to all JavaScript frameworks.
- */
 app.ui = (function()
 {
 	var ui = {};
 
 	// Make sure we get the correct event type on every touch system.
-	//ui.clickEvent = mosync.isIOS ? 'tap' : 'click';
 
 	ui.showMessage = function(message)
 	{
@@ -61,22 +60,16 @@ app.ui = (function()
 	 */
 	ui.showTweets = function()
 	{
-		console.log("@@@@ showTweets 1");
-
 		// Get the user name from the input field.
 		var user = app.ui.getUserNameField();
-		console.log("@@@@ showTweets 2");
 		if (user.length === 0)
 		{
-			console.log("@@@@ showTweets 3");
 			ui.showMessage("ui.showTweets: Invalid username");
 		}
 		else
 		{
-			console.log("@@@@ showTweets 4");
 			ui.showTweetsForUser(user);
 		}
-		console.log("@@@@ showTweets 5");
 	};
 
 	/**
@@ -86,7 +79,6 @@ app.ui = (function()
 	 */
 	ui.showTweetsForUser = function(user)
 	{
-		console.log("@@@@ showTweetsForUser: "  + user);
 		// Go to second screen.
 		ui.showPage("tweetList");
 		ui.showTweetListUserName(user);
@@ -142,8 +134,6 @@ app.ui = (function()
 	 */
 	ui.addFavouriteUser = function()
 	{
-		console.log("@@@ addFavouriteUser");
-
 		// Get the username from the input field
 		var userName = app.ui.getUserNameField();
 		if (userName.length === 0)
@@ -193,17 +183,14 @@ app.ui = (function()
 	 */
 	ui.keydown = function(keynum)
 	{
-		console.log("@@@@ keydown: " + keynum);
 		if (keynum == 13)
 		{
-			console.log("@@@@ keydown 2: " + keynum);
+			// TODO: Perhaps we need to use a timer to
+			// fix a virtual keyboard bug on Android 4.
 			//setTimeout(function () {
-				console.log("@@@@ calling submitButton");
-				//("#submitButton").trigger(clickEvent);
 				ui.showTweets();
 			//}, 1);
 		}
-		console.log("@@@@ keydown 3: " + keynum);
 	};
 
 	/**

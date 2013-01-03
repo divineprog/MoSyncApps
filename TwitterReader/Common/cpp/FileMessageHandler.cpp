@@ -52,10 +52,6 @@ FileMessageHandler::~FileMessageHandler()
 bool FileMessageHandler::handleMessage(Wormhole::MessageStream& message)
 {
 	const char* operation = message.getNext();
-	//int webViewHandle = MAUtil::stringToInteger(message.getNext());
-	
-	maWriteLog("@@@2", 4);
-	maWriteLog(operation, strlen(operation));
 
 	if (0 == strcmp(operation, "mosync.file.getLocalPath"))
 	{
@@ -90,22 +86,8 @@ void FileMessageHandler::handleFileGetLocalPath(
 	Wormhole::MessageStream& message)
 {
 	FileUtil fileUtil;
-	// Note: fileUtil.getLocalPath() does not work correctly on Windows Phone
-	// because of a bug in maGetSystemProperty for "mosync.path.local".
-	// Here is a fix for that.
 	String path = fileUtil.getLocalPath();
-	if (0 == path.length())
-	{
-		// This is a hack to make the program work on Windows Phone.
-		replyString(message, "/");
-
-		// Original code was:
-		// replyNull(message);
-	}
-	else
-	{
-		replyString(message, path);
-	}
+	replyString(message, path);
 }
 
 /**
@@ -176,7 +158,7 @@ void FileMessageHandler::replyString(
 	script += callbackId;
 	script += ", '" + result + "')";
 
-	message.getWebView()->callJS(script);
+	message.callJS(script);
 }
 
 /**
@@ -201,7 +183,7 @@ void FileMessageHandler::replyBoolean(Wormhole::MessageStream& message, bool res
 	script += callbackId;
 	script += "," + truth + ")";
 
-	message.getWebView()->callJS(script);
+	message.callJS(script);
 }
 
 /**
@@ -222,5 +204,5 @@ void FileMessageHandler::replyNull(Wormhole::MessageStream& message)
 	script += callbackId;
 	script += ", null)";
 
-	message.getWebView()->callJS(script);
+	message.callJS(script);
 }
