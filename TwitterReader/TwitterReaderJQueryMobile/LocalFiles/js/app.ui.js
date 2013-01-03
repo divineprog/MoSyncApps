@@ -2,18 +2,16 @@
 * @file app.ui.js
 * @author Mikael Kindborg
 *
-* UI code common to all TwitterReader apps.
+* This file contains UI code at a more abstract level.
+* The intention is to make it easier to switch UI libraries
+* without having to update/rewrite all the UI code.
 */
 
-/**
- * UI code common to all JavaScript frameworks.
- */
 app.ui = (function()
 {
 	var ui = {};
 
 	// Make sure we get the correct event type on every touch system.
-	//ui.clickEvent = mosync.isIOS ? 'tap' : 'click';
 
 	ui.showMessage = function(message)
 	{
@@ -40,43 +38,20 @@ app.ui = (function()
 	};
 
 	/**
-	 * Displays the Twitter user name in the UI.
-	 * @param user The Twitter user name.
-	 */
-	ui.showTweetListUserName = function(user)
-	{
-		$("#pageTitle").html(user);
-	};
-
-	/**
-	 * Displays a loading indicator in the UI.
-	 */
-	ui.showLoadingIndicator = function()
-	{
-		$("#tweetList").html("<li>Loading...</li>");
-	};
-
-	/**
 	 * Show the tweets for the user in the input form.
 	 */
 	ui.showTweets = function()
 	{
-		console.log("@@@@ showTweets 1");
-
 		// Get the user name from the input field.
 		var user = app.ui.getUserNameField();
-		console.log("@@@@ showTweets 2");
 		if (user.length === 0)
 		{
-			console.log("@@@@ showTweets 3");
 			ui.showMessage("ui.showTweets: Invalid username");
 		}
 		else
 		{
-			console.log("@@@@ showTweets 4");
 			ui.showTweetsForUser(user);
 		}
-		console.log("@@@@ showTweets 5");
 	};
 
 	/**
@@ -86,7 +61,6 @@ app.ui = (function()
 	 */
 	ui.showTweetsForUser = function(user)
 	{
-		console.log("@@@@ showTweetsForUser: "  + user);
 		// Go to second screen.
 		ui.showPage("tweetList");
 		ui.showTweetListUserName(user);
@@ -97,30 +71,6 @@ app.ui = (function()
 		{
 			ui.showTweetList(tweets);
 		});
-	};
-
-	/**
-	 * Outputs the list of tweets to the user-interface.
-	 * @param tweets The tweets as an array. Each element
-	 * represents one tweet and can be accessed via tweets[i].text
-	 */
-	ui.showTweetList = function(tweets)
-	{
-		var results = "";
-		if ((!tweets) ||
-			(tweets.length === 0) ||
-			(tweets.error === "Not found"))
-		{
-			results = "<li>No tweets found</li>";
-		}
-		else
-		{
-			for (var i = 0; i < tweets.length; ++i)
-			{
-				results += "<li>" + tweets[i].text + "</li>";
-			}
-		}
-		$("#tweetList").html(results);
 	};
 
 	/**
@@ -142,8 +92,6 @@ app.ui = (function()
 	 */
 	ui.addFavouriteUser = function()
 	{
-		console.log("@@@ addFavouriteUser");
-
 		// Get the username from the input field
 		var userName = app.ui.getUserNameField();
 		if (userName.length === 0)
@@ -168,42 +116,20 @@ app.ui = (function()
 	};
 
 	/**
-	 * Diplay the list of favourite users in the UI.
-	 * @param userData Array of user names.
-	 */
-	ui.displayFavouriteUsers = function(userData)
-	{
-		var users = app.parseFavouriteUsers(userData);
-		var list = "";
-		for (var i = 0; i < users.length; ++i)
-		{
-			list += "<li><a onclick='app.ui.showTweetsForUser(\"" +
-				users[i] +
-				"\")'>" +
-				users[i] +
-				"</a></li>";
-		}
-		$("#favouriteList").html(list);
-	};
-
-	/**
 	 * Keydown event listener. Gets called when the user presses
 	 * a button on his/her keyboard in the input field.
 	 * @param keynum The pressed key (as an ASCII value).
 	 */
 	ui.keydown = function(keynum)
 	{
-		console.log("@@@@ keydown: " + keynum);
 		if (keynum == 13)
 		{
-			console.log("@@@@ keydown 2: " + keynum);
+			// TODO: Perhaps we need to use a timer to
+			// fix a virtual keyboard bug on Android 4.
 			//setTimeout(function () {
-				console.log("@@@@ calling submitButton");
-				//("#submitButton").trigger(clickEvent);
 				ui.showTweets();
 			//}, 1);
 		}
-		console.log("@@@@ keydown 3: " + keynum);
 	};
 
 	/**
@@ -223,6 +149,68 @@ app.ui = (function()
 		ui.initializeFramework();
 
 		ui.readAndDisplayFavouriteUsers();
+	};
+
+	/**
+	 * Diplay the list of favourite users in the UI.
+	 * @param userData Array of user names.
+	 */
+	ui.displayFavouriteUsers = function(userData)
+	{
+		alert("ui.displayFavouriteUsers: Implement for the specific UI framework used");
+	};
+
+	/**
+	 * Displays the Twitter user name in the UI.
+	 * @param user The Twitter user name.
+	 */
+	ui.showTweetListUserName = function(user)
+	{
+		//$("#pageTitle").html(user);
+		alert("ui.showTweetListUserName: Implement for the specific UI framework used");
+	};
+
+	/**
+	 * Displays a loading indicator in the UI.
+	 */
+	ui.showLoadingIndicator = function()
+	{
+		//$("#tweetList").html("<li>Loading...</li>");
+		alert("ui.showLoadingIndicator: Implement for the specific UI framework used");
+	};
+
+	/**
+	 * Outputs the list of tweets to the user-interface.
+	 * @param tweets The tweets as an array. Each element
+	 * represents one tweet and can be accessed via tweets[i].text
+	 */
+	ui.showTweetList = function(tweets)
+	{
+		alert("ui.showTweetList: Implement for the specific UI framework used");
+	};
+
+	/**
+	 * Called by framework when document has loaded.
+	 */
+	ui.initializeFramework = function()
+	{
+		alert("ui.initializeFramework: Implement for the specific UI framework used");
+	};
+
+	/**
+	 * Navigate back one page.
+	 */
+	ui.goBack = function()
+	{
+		alert("ui.goBack: Implement for the specific UI framework used");
+	};
+
+	/**
+	 * Show one page.
+	 */
+	ui.showPage = function(page)
+	{
+		alert("ui.showPage: Implement for the specific UI framework used");
 	};
 
 	return ui;

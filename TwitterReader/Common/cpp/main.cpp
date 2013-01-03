@@ -32,8 +32,8 @@ public:
 	TwitterMoblet()
 	{
 		// Show the start page. This will also perform initialization if needed.
-		//showPage("index.html"); // Used for production.
-		reloadPage() // Used for debugging/dynamic reload.
+		showPage("index.html"); // Used for production.
+		//reloadPage(); // Used for debugging/dynamic reload.
 
 		// The beep sound is defined in file "Resources/Resources.lst".
 		setBeepSound(BEEP_WAV);

@@ -6,11 +6,6 @@
  * mosync object with new functions.
  */
 
-if (!window.mosync)
-{
-	mosync = {};
-}
-
 /**
  * The file submodule.
  */

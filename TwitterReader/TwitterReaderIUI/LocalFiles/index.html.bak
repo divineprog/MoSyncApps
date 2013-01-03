@@ -101,30 +101,6 @@
 			{
 				$("#tweetList").html("<li>Loading...</li>");
 			};
-
-			/**
-			 * Outputs the list of tweets to the user-interface.
-			 * @param tweets The tweets as an array. Each element
-			 * represents one tweet and can be accessed via tweets[i].text
-			 */
-			app.ui.showTweetList = function(tweets)
-			{
-				var results = "";
-				if ((!tweets) ||
-					(tweets.length === 0) ||
-					(tweets.error === "Not found"))
-				{
-					results = "<li>No tweets found</li>";
-				}
-				else
-				{
-					for (var i = 0; i < tweets.length; ++i)
-					{
-						results += "<li>" + tweets[i].text + "</li>";
-					}
-				}
-				$("#tweetList").html(results);
-			};
 		})();
 	</script>
 </head>

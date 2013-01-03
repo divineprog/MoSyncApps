@@ -19,12 +19,12 @@ JSFilesToCopy = [
   "js/wormhole.js"
 ]
 
-# C++ files to be copied.
-CPPFilesToCopy = [
-  "cpp/main.cpp",
-  "cpp/FileMessageHandler.h",
-  "cpp/FileMessageHandler.cpp"
-]
+# C++ files to be copied. Not used!
+#CPPFilesToCopy = [
+#  "cpp/main.cpp",
+#  "cpp/FileMessageHandler.h",
+#  "cpp/FileMessageHandler.cpp"
+#]
 
 # Target directories.
 CopyTargets = [
@@ -36,12 +36,9 @@ CopyTargets = [
 # Copy the files.
 def copyFiles
   CopyTargets.each do |projectPath|
-    copyFilesTo(
-	  projectPath + "LocalFiles/js/",
-      JSFilesToCopy)
-    copyFilesTo(
-	  projectPath,
-      CPPFilesToCopy)
+    copyFilesTo(projectPath + "LocalFiles/js/", JSFilesToCopy)
+# We do not copy C++ files, they are included from the project.
+#   copyFilesTo(projectPath, CPPFilesToCopy)
   end
 end
 
