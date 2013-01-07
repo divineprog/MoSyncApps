@@ -11,9 +11,15 @@
 
 	<meta http-equiv="Content-type" content="text/html; charset=utf-8"> 
 	<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <!--
     <link rel="stylesheet" href="jqmobi/icons.css" />
     <link rel="stylesheet" href="jqmobi/jq.ui.css" title="default" />
-	<script src="jqmobi/jq.ui.min.js"></script>
+    -->
+    <link rel="stylesheet" href="http://cdn.jqmobi.com/1.2/icons.css" />
+    <link rel="stylesheet" href="http://cdn.jqmobi.com/1.2/jq.ui.css" />
+        
+	<script src="http://cdn.jqmobi.com/1.2/jq.mobi.min.js"></script>
+	<script src="http://cdn.jqmobi.com/1.2/jq.ui.min.js"></script>
    
 	<script src="js/wormhole.js"></script>
 	<script src="js/mosync.file.js"></script>
@@ -27,14 +33,18 @@
 		 */
 		(function()
 		{
+			// Hack because there is no way to get the current 
+			// page in jqUI?
+			var isOnFirstPage = true;
+			
 			/**
 			 * Show one page.
 			 */
 			app.ui.showPage = function(page)
 			{
 				console.log("@@@ app.ui.showPage: " + page);
-				//$.ui.loadContent("#main",false,false,"up");
 				$.ui.loadContent("#" + page, false, false, null);
+				isOnFirstPage = false;
 			};
 
 			/**
@@ -44,12 +54,18 @@
 			{
 				console.log("@@@ app.ui.goBack");
 
-				// Send the app to the background if
-				// we are on the home screen (first page).
-				//mosync.app.sendToBackground();
-				//mosync.app.exit();
-				$.ui.goBack();
-				return false;
+				if (isOnFirstPage)
+				{
+					// Send the app to the background if
+					// we are on the home screen (first page).
+					//mosync.app.sendToBackground();
+					mosync.app.exit();
+				}
+				else
+				{
+					$.ui.goBack();
+					isOnFirstPage = true;
+				}
 			};
 
 			/**
@@ -86,7 +102,8 @@
 			 */
 			app.ui.showTweetListUserName = function(user)
 			{
-				$.ui.setTitle(user);
+				//$.ui.setTitle(user);
+				$("#tweetListHeader").html(user);
 			};
 
 			/**
@@ -94,7 +111,7 @@
 			 */
 			app.ui.showLoadingIndicator = function()
 			{
-				$.ui.setTitle("Loading...");
+				$("#tweetListContent").html("<li>Loading...</li>");
 			};
 
 			/**
@@ -119,7 +136,35 @@
 					}
 				}
 				$("#tweetListContent").html(results);
-				$("#tweetListContent").listview("refresh");
+			};
+			
+			/**
+			 * We override (replace) this function, because
+			 * jqMobi does not support the .error construct.
+			 *
+			 * Downloads Tweets for a specific user.
+			 * @param user Twitter user name.
+			 * @param callbackFun Function called when download has
+			 * finished. Parameters: callbackFun(tweetArray).
+			 */
+			app.getTweetsForUser = function(user, callbackFun)
+			{
+				// Create the Twitter url.
+				var twitterUrl =
+					"http://api.twitter.com/1/statuses/" +
+					"user_timeline.json?screen_name=" +
+					user;
+
+				// Do ajax call to get an array of Tweets.
+				$.getJSON(twitterUrl, function(tweets)
+				{
+					callbackFun(tweets);
+				});
+				/*.error(function(jqXHR, textStatus, errorThrown)
+				{
+					//alert("getJSON error: " + textStatus);
+					callbackFun(null);
+				});*/
 			};
 		})();
 	</script>
@@ -127,12 +172,21 @@
 
 <body>
 	<div id="jQUi">
-		<div id="header">
-			<!-- <h1 id="pageTitle">TwitterReader</h1>  -->
-		</div>
-
+<!-- We use custom headers to display a properly formatted back button
+and hook in our custom back function.
+		<div id="header"></div>
+-->
+		<header id="home_header">
+		    <h1>TwitterReader</h1>
+		</header>
+		
+		<header id="tweetList_header">
+		    <h1 id="tweetListHeader">TweetList</h1>
+		    <a class="button" class="icon home" href="javascript:app.ui.goBack()">Back</a>
+		</header>
+			
 		<div id="content">
-			<div id="home" title="TwitterReader" class="panel" selected="true">
+			<div id="home" title="TwitterReader" class="panel" selected="true" data-header="home_header">
 				<ul>
 					<li>
 						<input class="jq-ui-forms"
@@ -154,7 +208,7 @@
 				</ul>
 			</div>
 			
-			<div id="home" title="TweetList" class="panel" selected="false">
+			<div id="tweetList" title="TweetList" class="panel"  data-header="tweetList_header">
 				<ul id="tweetListContent">
 					<li>Loading...</li>
 				</ul>

@@ -18,6 +18,8 @@
 #include "FileMessageHandler.h"   // Custom File API.
 #include "MAHeaders.h"
 
+#include "ReloadUtil.h"
+
 // Namespaces we want to access.
 using namespace MAUtil; // Class Moblet
 using namespace NativeUI; // WebView widget.
@@ -31,6 +33,9 @@ class TwitterMoblet : public HybridMoblet
 public:
 	TwitterMoblet()
 	{
+		//mReloadUtil.setReloadURL("http://192.168.0.157:4042/index.html");
+		//mReloadUtil.setMoblet(this);
+
 		// Show the start page. This will also perform initialization if needed.
 		showPage("index.html"); // Used for production.
 		//reloadPage(); // Used for debugging/dynamic reload.
@@ -56,32 +61,23 @@ public:
 	 * Simple support for dynamic reloading of the
 	 * app uding development.
 	 */
-	void reloadPage()
+	/*void reloadPage()
 	{
 		char* s = "@@@ Reloading page";
 		maWriteLog(s, strlen(s));
 		// Enter address of your HTML-sever where you have
 		// the application files.
 		showPage("http://192.168.0.157:4042/index.html");
-	}
+	}*/
 
 	/**
 	 * This method is called when a key is pressed.
 	 */
-	void keyPressEvent(int keyCode, int nativeCode)
+	/*void keyPressEvent(int keyCode, int nativeCode)
 	{
-		lprintfln("@@@ keyPressEvent: %i %i\n", keyCode, nativeCode);
-
-		if (MAK_MENU == keyCode || 0 == keyCode)
-		{
-			reloadPage();
-		}
-		else
-		{
-			// This forwards the event to PhoneGapMessageHandler.
-			HybridMoblet::keyPressEvent(keyCode, nativeCode);
-		}
-	}
+		// This forwards the event to PhoneGapMessageHandler.
+		HybridMoblet::keyPressEvent(keyCode, nativeCode);
+	}*/
 
 	void handleFileMessage(Wormhole::MessageStream& message)
 	{
@@ -93,6 +89,8 @@ private:
 	 * Object that handles messages from JavaScript.
 	 */
 	FileMessageHandler mMessageHandler;
+
+	//ReloadUtil mReloadUtil;
 };
 
 /**
