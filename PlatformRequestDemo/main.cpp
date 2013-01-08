@@ -20,6 +20,9 @@ using namespace Wormhole;
 class MyMoblet : public HybridMoblet
 {
 public:
+	/**
+	 * Constructor.
+	 */
 	MyMoblet()
 	{
 		// Show the start page.
@@ -38,9 +41,15 @@ public:
 			(FunTable::MessageHandlerFun)&MyMoblet::handlePlatformRequest);
 	}
 
+	/**
+	 * Function that opens the requested URL.
+	 */
 	void handlePlatformRequest(Wormhole::MessageStream& message)
 	{
+		// Obtain URL parameter sent from JavaScript.
 		const char* url = message.getNext();
+
+		// Make the request to open the URL.
 		maPlatformRequest(url);
 	}
 };
