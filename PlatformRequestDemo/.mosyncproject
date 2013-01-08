@@ -17,8 +17,9 @@
 <property key="build.prefs:memory.stack/Debug" value="512"/>
 <property key="build.prefs:memory.stack/Release" value="512"/>
 <property key="com.mobilesorcery.sdk.html5.support" value="true"/>
-<property key="odd.support" value="true"/>
+<property key="odd.support" value="false"/>
 <property key="profile.mgr.type" value="0"/>
 <property key="template.id" value="project.html5.hybrid"/>
+<property key="winmobilecs:guid" value="0c57ac00-3bcc-1030-806c-c97c6f3f3d0d"/>
 </properties>
 </project>

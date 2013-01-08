@@ -29,10 +29,14 @@ If you have not used the MoSync SDK previously, [read this tutorial to get start
 
 The app PlatformRequestDemo has a very simple user interface with buttons that open locations on Google Maps.
 
-Here are screenshots from the app running on iOS and Android:
+Screenshots from the app running in the iOS Simulator and on Android Nexus 7:
 
-![Hybrid SQL Demo iOS Screenshot](https://raw.github.com/divineprog/MoSyncApps/master/HybridSQLDemo/Tutorial/HybridSQLDemoIOS.jpg)
-![Hybrid SQL Demo Android Screenshot](https://raw.github.com/divineprog/MoSyncApps/master/HybridSQLDemo/Tutorial/HybridSQLDemoAndroid.jpg)
+![PlatformRequestDemo iOS 1](https://raw.github.com/divineprog/MoSyncApps/master/PlatformRequestDemo/Tutorial/PlatformRequestDemo_iOS_1.png)
+![PlatformRequestDemo iOS 2](https://raw.github.com/divineprog/MoSyncApps/master/PlatformRequestDemo/Tutorial/PlatformRequestDemo_iOS_2.png)
+![PlatformRequestDemo Android 1](https://raw.github.com/divineprog/MoSyncApps/master/PlatformRequestDemo/Tutorial/PlatformRequestDemo_Android_1.png)
+![PlatformRequestDemo Android 2](https://raw.github.com/divineprog/MoSyncApps/master/PlatformRequestDemo/Tutorial/PlatformRequestDemo_Android_2.png)
+
+When you try out the app on Android, notice that going back from Google Maps to the app screen requires multiple back button presses (Somehow Google Maps puts in an extra navigaton step). On play web pages, you can go back directly with oen press, unless you have navigated to additional pages, in which case you need to press back a corresponding number of times. You can always go to your app again via the Home button. On iOS, you just press home and then go into the app again when you wish to return to ot (iOS does not have a back button). 
 
 The source code is available on GitHub. The JavaScript layer of the app is in file [index.html](https://github.com/divineprog/MoSyncApps/blob/master/PlatformRequestDemo/LocalFiles/index.html). The  C++ layer is in file [main.cpp](https://github.com/divineprog/MoSyncApps/blob/master/PlatformRequestDemo/main.cpp).
 
