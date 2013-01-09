@@ -1,5 +1,5 @@
 # How To Extend JavaScript With Custom C++ Code - Opening Google Maps From A Hybrid App
-<!-- C:\md>perl Markdown.pl C:\MoSyncProjects\MoSyncApps\PlatformRequestDemo\Tutorial\PlatformRequestDemo.md > output.txt -->
+<!-- C:\md>perl Markdown.pl C:\MoSyncProjects\MoSyncApps\PlatformRequestDemo\Tutorial\PlatformRequestDemo.md > C:\MoSyncProjects\MoSyncApps\PlatformRequestDemo\Tutorial\PlatformRequestDemo.html -->
 
 <!--
 <style type="text/css">
@@ -21,7 +21,7 @@ The solution is to use a C++ level syscall called [maPlatformRequest](http://www
 
 Of course, the situation would be simpler if the functionality of maPlatformRequest would already be available in the Wormhole JavaScript API, but as it goes, it is not in there yet.
 
-Note that if you are using MoSync Reload, cvalling custom C++ code won't work. You need to build your app with the MoSync SDK for the C++ code to be built and included with your app.
+Note that if you are using MoSync Reload, calling custom C++ code won't work. You need to build your app with the MoSync SDK for the C++ code to be built and included with your app.
 
 If you have not used the MoSync SDK previously, [read this tutorial to get started quickly](http://www.mosync.com/documentation/manualpages/getting-started-html5-and-javascript).
 
@@ -36,7 +36,7 @@ Screenshots from the app running in the iOS Simulator and on Android Nexus 7:
 ![PlatformRequestDemo Android 1](https://raw.github.com/divineprog/MoSyncApps/master/PlatformRequestDemo/Tutorial/PlatformRequestDemo_Android_1.png)
 ![PlatformRequestDemo Android 2](https://raw.github.com/divineprog/MoSyncApps/master/PlatformRequestDemo/Tutorial/PlatformRequestDemo_Android_2.png)
 
-When you try out the app on Android, notice that going back from Google Maps to the app screen requires multiple back button presses (Somehow Google Maps puts in an extra navigaton step). On play web pages, you can go back directly with oen press, unless you have navigated to additional pages, in which case you need to press back a corresponding number of times. You can always go to your app again via the Home button. On iOS, you just press home and then go into the app again when you wish to return to ot (iOS does not have a back button). 
+When you try out the app on Android, notice that going back from Google Maps to the app screen requires multiple back button presses (Somehow Google Maps puts in an extra navigation step). On plain web pages, you can go back directly with one press, unless you have navigated any links, in which case you need to press back the corresponding number of times. You can always go to your app again via the Home button. On iOS, you just press the Home key and then go into the app again when you wish to return to it (iOS does not have a back button). 
 
 The source code is available on GitHub. The JavaScript layer of the app is in file [index.html](https://github.com/divineprog/MoSyncApps/blob/master/PlatformRequestDemo/LocalFiles/index.html). The  C++ layer is in file [main.cpp](https://github.com/divineprog/MoSyncApps/blob/master/PlatformRequestDemo/main.cpp).
 
@@ -46,11 +46,11 @@ The syscall maPlatformRequest is in the MoSync C API. It opens a URL in an exter
 
 Here is an example of opening a web page:
 
-    maPlatformRquest("http://maps.google.com/");
+    maPlatformRequest("http://maps.google.com/");
 
 And here is an example of dialing a number:
 
-    maPlatformRquest("tel:046850510300");
+    maPlatformRequest("tel:046850510300");
 
 Note that if you wish to use this functionality, you must set the "Phone Calls" permission in the MoSync SDK (in the Eclipse IDE). This setting is found by right-click the project and select Properties/MoSync Project/Application Permissions.
 
@@ -121,4 +121,4 @@ To get a more in-depth explanation of how the JavaScript to C++ bridge works, I 
 
 ## Wrapping up
 
-HTML5 and libralies like PhoneGap brings great power to mobile apps, but there can be times when you encounter functionality that is missing. By making a Hybrid App, which combines JavaScript with native code, the missing functionality can be made available. In the case of the MoSync SDK, functionality not available in JavaScript can be implemented in C/C++, as illustrated by the PlatformRequestDemo application. This is a powerful capability that can significantly improve your apps.
+HTML5 and libraries like PhoneGap brings great power to mobile apps, but there can be times when you encounter functionality that is missing. By making a Hybrid App, which combines JavaScript with native code, the missing functionality can be made available. In the case of the MoSync SDK, functionality not available in JavaScript can be implemented in C/C++, as illustrated by the PlatformRequestDemo application. This is a powerful capability that can significantly improve your apps.
