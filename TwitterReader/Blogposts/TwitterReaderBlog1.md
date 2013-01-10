@@ -68,7 +68,7 @@ Ease of learning and using the framework:
 4. It is easy to learn and use all of the framework, with only a few parts requiring additional time to use.
 5. It is very easy to learn and use the framework to tmplement the test app, finding documentation and examples is very easy.
 
-The critera are quite closely related to the implementation of the TwitterReader example app. But, this app is quite basic, and uses UI elements common to many applications, so it have some relevance for a wider range of applications. Of course, the ease of learning and use is closely related to developer experience, both in general, and experience with similar frameworks.
+These critera are quite closely related to the implementation of the TwitterReader example app. But, the app is quite basic, and uses UI elements common to many applications, so it has some relevance for a wider range of applications. Regarding ease of learning and use, this is of course closely related to developer experience, both in general, and in experience with similar frameworks.
 
 Functionality:
 
@@ -82,50 +82,75 @@ These critera relates specifically to the TwitterReader example app. A user inte
 
 ## Overview of the test app
 
-The TwitterReader app is based on the example app WebViewTwitter, which is shipped with the MoSync SDK. The app is a JS/C++ hybrid app that displays Twitter feeds. The source code is available on [GitHub](https://github.com/divineprog/MoSyncApps/tree/master/TwitterReader).
-
-### User interface
+The TwitterReader app is based on the example app WebViewTwitter, which is shipped with the MoSync SDK. The app is a JS/C++ hybrid app that displays Twitter feeds.
 
 Here are screenshots of the original version of the app, which is implemented using the jqTouch library.
 
+TODO: Add screenshots.
+
 You enter a Twitter use name, and the recent tweets for that user is displayed on a separate screen. You can also save the user name in a list of favourite users, and later use that as a shortcut. Favourites are stored on the device in a text file (no method for removing items from the list is currently provided).
+
+## In the code
+
+The source code for the test apps are available on [GitHub](https://github.com/divineprog/MoSyncApps/tree/master/TwitterReader).
 
 ### Architecture
 
-Since there are several versions of the app implemented using different UI libraries, the app use a layered architecture (which is a goo idea anyway). The following layers are used:
+Since there are several versions of the app implemented using different UI libraries, the app use a layered architecture (which is a good idea anyway). The following layers are used (all of then implemented in JavaScript):
 
 * Application layer (shared by all versions)
 * General UI layer (shared by all versions)
-* Framework specific layer (not shared)
+* Framework specific UI layer (not shared)
 
-Using this approach, only one layer needs to be rewritten/updated when a new UI library is used.
+Using this approach, only one layer needs to be rewritten/updated when a new UI library is used. The appication layer contains logic for the application.
 
-### In the code
+The app also contains code written in C++. This includes start up code and the implementation of a file handling library, which is used from JavaScript. The C++ code is shared by all variations of the TwitterReader app.
+
+### Files
 
 Shared files:
 
-* app.js - Contains the app object
-* app.ui.js - Contains the app.ui object
-* main.cpp - 
+* [app.js](https://github.com/divineprog/MoSyncApps/tree/master/TwitterReader/Common/js/app.js) - Contains the app object (application layer)
+* [app.ui.js](https://github.com/divineprog/MoSyncApps/tree/master/TwitterReader/Common/js/app.ui.js) - Contains the app.ui object (https://github.com/divineprog/MoSyncApps/tree/master/TwitterReader/Common/js/app.js) (general UI layer)
+* [main.cpp](https://github.com/divineprog/MoSyncApps/tree/master/TwitterReader/Common/cpp/main.cpp) - Start up code that creates the app
+* [FileMessageHandler.h](https://github.com/divineprog/MoSyncApps/tree/master/TwitterReader/Common/cpp/FileMessageHandler.h), [FileMessageHandler.cpp](https://github.com/divineprog/MoSyncApps/tree/master/TwitterReader/Common/cpp/FileMessageHandler.cpp) - File handling functions
 
-Framework specific file:
+Framework specific files:
 
-* index.html
+* index.html - Contains framwork specific code added to the app.ui object (see code for this file in the specific projects, each project has its own version)
 
-## Frameworks tested
+Similar to how class-based languages use overriding of methods in a superclass to implement specific behaviour, the JavaScript code in index.html replaces/fills in functions in the app.up object. Browse the code to see how this is done.
 
-For Part 1, we have tested jqTouch and iUI.
+For Part 1, we have tested jqTouch and iUI, here are the projects and files:
 
-
-## Example app architecture
-
+* [TwitterReaderJQTouch](https://github.com/divineprog/MoSyncApps/tree/master/TwitterReader/TwitterReaderJQTouch) - [index.html](https://github.com/divineprog/MoSyncApps/tree/master/TwitterReader/TwitterReaderJQTouch/LocalFiles/index.html)
+* [TwitterReaderIUI](https://github.com/divineprog/MoSyncApps/tree/master/TwitterReader/TwitterReaderIUI) - [index.html](https://github.com/divineprog/MoSyncApps/tree/master/TwitterReader/TwitterReaderIUI/LocalFiles/index.html)
 
 ## jQTouch
 
+
 ### Look (aesthetic impression)
+
+TODO: Screenshots.
 
 ### Performance (how "snappy" is the UI)
 
 ### Ease of understanding the framework
 
 ### Functionality
+
+## iUI
+
+### Look (aesthetic impression)
+
+TODO: Screenshots.
+
+### Performance (how "snappy" is the UI)
+
+### Ease of understanding the framework
+
+### Functionality
+
+## Conclusion
+
+To be continued.
