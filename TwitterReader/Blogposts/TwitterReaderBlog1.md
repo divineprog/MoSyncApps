@@ -22,7 +22,7 @@ The test case app is called TwitterReader, a JS/C++ hybrid app that displays Twi
 
 For each framework tested, we implement the UI of the app using that framwork. Then we run the  app on different devices, and evaluate it using the criteria described below.
 
-The evaluation critera we use are based on (1) the user experience, and (2) the developer experience.
+The evaluation critera we use are based on (1) the end-user experience, and (2) the developer experience.
 
 User experience critera:
 
@@ -34,11 +34,15 @@ Developer experience criteria:
 * Ease of learning and using the framework
 * Functionality (are the features needed to implement the TwitterReader UI available?)
 
-The above are to a large extent subjective criteria. But you don't have to accept our view. The source code is available, and we provide screenshots and videos, so you can judge yourself.
+Technical critera:
 
-Note that we apply these criteria to the test app. Our evaluation is best characterised as a case based study. We do not capture every aspect of the libraries, but we capture the aspects relevant for the TwitterReader app.
+* Framework support (which platforms does the framwork run on)
 
-To make results a bit more concrete, we will grade each critera on a scale from 1 to 5, where 1 is the worst, and 5 is the best. Here are the grading critera:
+The above criteria are to a large extent based on subjective assessments. But you don't have to accept our view. The source code is available, and we provide screenshots and videos, so you can judge yourself.
+
+Note that we apply the evaluation criteria to the test app we use. Our evaluation is best characterised as a case based study. We do not capture every aspect of the UI frameworks, but we capture the aspects relevant for the TwitterReader app.
+
+To make results a bit more concrete, we will grade each critera on a scale from 1 to 5, where 1 is the worst, and 5 is the best (again these are subjective values). Here are the grading critera:
 
 Graphical appearance:
 
@@ -62,7 +66,7 @@ A performance similar to that of the platform's native UI would get 5 as a score
 
 Ease of learning and using the framework:
 
-1. The framework is impossible to understand and learn for the purpose of implementing the test app.
+1. It is impossible to understand and learn the framework for the purpose of implementing the test app.
 2. It is possible to learn and use some parts of the framework, but documentation and examples are very poor, and there are many aspects that are not understandable.
 3. It is possible to learn and use the framework with some effort, but some parts needed for the test app require lots of time to understand and use.
 4. It is easy to learn and use all of the framework, with only a few parts requiring additional time to use.
@@ -73,12 +77,25 @@ These critera are quite closely related to the implementation of the TwitterRead
 Functionality:
 
 1. The UI of the app cannot be implemented at all.
-2. Not all parts of the UI could be implemented.
+2. Not all parts of the UI can be implemented.
 3. The UI of the app works, but there are several features in the UI missing.
-4. All parts of the UI could be implemented, with only some small features are missing.
-5. All of the UI features could be fully implemented.
+4. All parts of the UI can be implemented, with only some small features are missing.
+5. All of the UI features can be fully implemented.
 
-These critera relates specifically to the TwitterReader example app. A user interface that has the UI features of the original jqTouch UI would get 5 on this scale. This criteria is also related to developer experience. A skilled developer who knows the UI framework well, could probably implement missing functionality.
+Again, the evaluation critera relate to the TwitterReader example app. A user interface that has the UI features of the original jqTouch UI would get 5 on this scale. This criteria is also related to developer experience. A skilled developer who knows the UI framework well, could probably implement missing functionality.
+
+Framework support:
+
+For framework support we list the platforms/versions the framework runs on. 
+
+Tested platforms/devices:
+
+* Android 2.3 (Nexus One)
+* Android 4.2 (Nexus 7)
+* iOS 5 (iPhone 4)
+* Windows Phone 8 (HTC?)
+
+This gives a score from 0 to 4 (0 = does not run on any platform, 4 = runs on all 4 platforms).
 
 ## Overview of the test app
 
@@ -96,13 +113,13 @@ The source code for the test apps are available on [GitHub](https://github.com/d
 
 ### Architecture
 
-Since there are several versions of the app implemented using different UI libraries, the app use a layered architecture (which is a good idea anyway). The following layers are used (all of then implemented in JavaScript):
+Since there are several versions of the app implemented using different UI libraries, we use a layered architecture (which is a good idea anyway). The following layers are used (implemented in JavaScript):
 
 * Application layer (shared by all versions)
 * General UI layer (shared by all versions)
 * Framework specific UI layer (not shared)
 
-Using this approach, only one layer needs to be rewritten/updated when a new UI library is used. The appication layer contains logic for the application.
+The appication layer contains logic for the application. The UI layer is sprit in two parts, a general part and a specific part. Using this approach, only one layer needs to be rewritten/updated when a new UI library is used. 
 
 The app also contains code written in C++. This includes start up code and the implementation of a file handling library, which is used from JavaScript. The C++ code is shared by all variations of the TwitterReader app.
 
@@ -128,16 +145,21 @@ For Part 1, we have tested jqTouch and iUI, here are the projects and files:
 
 ## jQTouch
 
+The first framework tested is [jQTouch](http://www.jqtouch.com/), Version 1.0 beta 4rc. jQTouch is the framework originally used for the WebViewTwitter example application that ships with the MoSync SDK.
 
 ### Look (aesthetic impression)
 
 TODO: Screenshots.
+
+Score: 4
 
 ### Performance (how "snappy" is the UI)
 
 ### Ease of understanding the framework
 
 ### Functionality
+
+Total score for jQTouch: X
 
 ## iUI
 
