@@ -276,7 +276,7 @@ public:
 
 		lprintfln("@@@ JS: %s", script.c_str());
 
-		message.getWebView()->callJS(script);
+		message.callJS(script);
 	}
 
 	void reloadPage()
