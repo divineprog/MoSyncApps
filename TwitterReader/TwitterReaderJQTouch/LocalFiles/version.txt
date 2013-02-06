@@ -1,0 +1,1 @@
+This example uses jQtouch 1.0 beta rc4
