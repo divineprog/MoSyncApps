@@ -17,8 +17,6 @@
 #include <Wormhole/HybridMoblet.h>
 #include "MAHeaders.h"
 
-#include "ReloadUtil.h"
-
 // Namespaces we want to access.
 using namespace MAUtil; // Class Moblet
 using namespace NativeUI; // WebView widget.
@@ -32,12 +30,8 @@ class TwitterMoblet : public HybridMoblet
 public:
 	TwitterMoblet()
 	{
-		//mReloadUtil.setReloadURL("http://192.168.0.157:4042/index.html");
-		//mReloadUtil.setMoblet(this);
-
-		// Show the start page. This will also perform initialization if needed.
-		showPage("index.html"); // Used for production.
-		//reloadPage(); // Used for debugging/dynamic reload.
+		// Show the start page.
+		showPage("index.html");
 
 		// The beep sound is defined in file "Resources/Resources.lst".
 		setBeepSound(BEEP_WAV);
@@ -52,19 +46,6 @@ public:
 	}
 
 	/**
-	 * Simple support for dynamic reloading of the
-	 * app uding development.
-	 */
-	/*void reloadPage()
-	{
-		char* s = "@@@ Reloading page";
-		maWriteLog(s, strlen(s));
-		// Enter address of your HTML-sever where you have
-		// the application files.
-		showPage("http://192.168.0.157:4042/index.html");
-	}*/
-
-	/**
 	 * This method is called when a key is pressed.
 	 */
 	/*void keyPressEvent(int keyCode, int nativeCode)
@@ -72,9 +53,6 @@ public:
 		// This forwards the event to PhoneGapMessageHandler.
 		HybridMoblet::keyPressEvent(keyCode, nativeCode);
 	}*/
-
-private:
-	//ReloadUtil mReloadUtil;
 };
 
 /**
