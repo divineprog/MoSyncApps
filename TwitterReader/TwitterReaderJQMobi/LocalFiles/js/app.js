@@ -15,6 +15,15 @@ var app = (function()
 	var app = {};
 
 	/**
+	 * Helper function to determine if Local Storage
+	 * is available.
+	 */
+	function hasLocalStorage()
+	{
+		return typeof(Storage) !== "undefined";
+	}
+  
+	/**
 	 * Downloads Tweets for a specific user.
 	 * @param user Twitter user name.
 	 * @param callbackFun Function called when download has
@@ -41,31 +50,18 @@ var app = (function()
 
 	/**
 	 * Read the list of favourite users.
-	 * @param callbackFun Called with parameters:
-	 * callbackFun(rawUserData, filePath)
+	 * @return String with list of users.
 	 */
-	app.readFavouriteUsers = function(callbackFun)
+	app.readFavouriteUsers = function()
 	{
-		// Get path to local file directory, then
-		// read favourite users from that directory.
-		mosync.file.getLocalPath(function(path)
+		if (hasLocalStorage())
 		{
-			if (!path)
-			{
-				// Report error.
-				callbackFun(null, null);
-			}
-			else
-			{
-				var filePath = path + "SavedUsers";
-				mosync.file.read(
-					filePath,
-					function(data)
-					{
-						callbackFun(data, filePath);
-					});
-			}
-		});
+			return localStorage.favouriteUsers;
+		}
+		else
+		{
+			return null;
+		}
 	};
 
 	/**
@@ -78,37 +74,31 @@ var app = (function()
 	app.addFavouriteUser = function(userName, callbackFun)
 	{
 		// First read users, then add the new user name.
-		app.readFavouriteUsers(function(userData, filePath)
+		var userData = app.readFavouriteUsers();
+
+		// Initialise to empty string if null.
+		var userList = !userData ? "" : userData;
+
+		// Create a unique string, "!" is not in any
+		// Twitter user name.
+		var separatedUserName = "!" + userName + "!";
+
+		// Add user only if not in string.
+		if (-1 === userList.indexOf(separatedUserName))
 		{
-			// Initialise to empty string if null.
-			var userList = !userData ? "" : userData;
+			userList += separatedUserName;
 
-			// Create a unique string, "!" is not in any
-			// Twitter user name.
-			var separatedUserName = "!" + userName + "!";
-
-			// Add user only if not in string.
-			if (-1 === userList.indexOf(separatedUserName))
+			// Save user list.
+			if (hasLocalStorage())
 			{
-				userList += separatedUserName;
-
-				// Write user list.
-				mosync.file.write(
-					filePath,
-					userList,
-					function(success)
-					{
-						if (success)
-						{
-							callbackFun(userList);
-						}
-						else
-						{
-							callbackFun(null);
-						}
-					});
+				localStorage.favouriteUsers = userList;
+				callbackFun(userList);
 			}
-		});
+			else
+			{
+				callbackFun(null);
+			}
+		}
 	};
 
 	/**

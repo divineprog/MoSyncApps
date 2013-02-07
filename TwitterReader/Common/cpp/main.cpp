@@ -15,7 +15,6 @@
 
 #include <conprint.h>
 #include <Wormhole/HybridMoblet.h>
-#include "FileMessageHandler.h"   // Custom File API.
 #include "MAHeaders.h"
 
 #include "ReloadUtil.h"
@@ -45,11 +44,6 @@ public:
 
 		// Turn off zoom.
 		getWebView()->disableZoom();
-
-		// Register functions to handle custom messages sent from JavaScript.
-		addMessageFun(
-			"File",
-			(FunTable::MessageHandlerFun)&TwitterMoblet::handleFileMessage);
 	}
 
 	virtual ~TwitterMoblet()
@@ -79,17 +73,7 @@ public:
 		HybridMoblet::keyPressEvent(keyCode, nativeCode);
 	}*/
 
-	void handleFileMessage(Wormhole::MessageStream& message)
-	{
-		mMessageHandler.handleMessage(message);
-	}
-
 private:
-	/**
-	 * Object that handles messages from JavaScript.
-	 */
-	FileMessageHandler mMessageHandler;
-
 	//ReloadUtil mReloadUtil;
 };
 

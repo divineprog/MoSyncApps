@@ -12,8 +12,6 @@ require "fileutils"
 
 # JavaScript files to be copied.
 JSFilesToCopy = [
-  "js/mosync.file.js",
-  "js/mosync.mock.js",
   "js/app.js",
   "js/app.ui.js",
   "js/wormhole.js"
@@ -30,7 +28,8 @@ JSFilesToCopy = [
 CopyTargets = [
   "../TwitterReaderIUI/",
   "../TwitterReaderJQueryMobile/",
-  "../TwitterReaderJQMobi/"
+  "../TwitterReaderJQMobi/",
+  "../TwitterReaderJQTouch/"
 ]
 
 # Copy the files.

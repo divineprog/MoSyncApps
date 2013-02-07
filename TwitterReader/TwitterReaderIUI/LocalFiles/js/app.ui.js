@@ -78,13 +78,11 @@ app.ui = (function()
 	 */
 	ui.readAndDisplayFavouriteUsers = function()
 	{
-		app.readFavouriteUsers(function(userData, path)
+		var userData = app.readFavouriteUsers();
+		if (userData)
 		{
-			if (userData)
-			{
-				ui.displayFavouriteUsers(userData);
-			}
-		});
+			ui.displayFavouriteUsers(userData);
+		}
 	};
 
 	/**
