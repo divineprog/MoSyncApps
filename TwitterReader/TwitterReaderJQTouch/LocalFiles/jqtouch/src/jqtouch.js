@@ -15,7 +15,7 @@
 
     Documentation and issue tracking on GitHub <http://github.com/senchalabs/jQTouch/>
 
-    (c) 2009-2011 Sencha Labs
+    (c) 2009-2013 Sencha Labs
     jQTouch may be freely distributed under the MIT license.
 
 */
@@ -23,8 +23,7 @@
 
     $.jQTouch = function(options) {
         // Initialize internal jQT variables
-        var $ = fx(),
-            $body,
+        var $body,
             $head=$('head'),
             history=[],
             newPageCount=0,
@@ -35,6 +34,8 @@
             publicObj={},
             tapBuffer=100, // High click delay = ~350, quickest animation (slide) = 250
             extensions=$.jQTouch.prototype.extensions,
+            extTapHandlers=$.jQTouch.prototype.tapHandlers,
+            tapHandlers=[],
             animations=[],
             hairExtensions='',
             defaults = {
@@ -48,13 +49,15 @@
                 fullScreen: true,
                 fullScreenClass: 'fullscreen',
                 icon: null,
-                icon4: null, // available in iOS 4.2 and later.
+                icon4: null, // available in iOS 4.2 and later
                 preloadImages: false,
+                starter: $(document).ready,
                 startupScreen: null,
                 statusBar: 'default', // other options: black-translucent, black
                 submitSelector: '.submit',
                 touchSelector: 'a, .touch',
                 trackScrollPositions: true,
+                updateHash: true,
                 useAnimations: true,
                 useFastTouch: true,
                 useTouchScroll: true,
@@ -66,7 +69,8 @@
                     {name:'flipleft', selector:'.flipleft, .flip', is3d: true},
                     {name:'flipright', selector:'.flipright', is3d: true},
                     {name:'pop', selector:'.pop', is3d: true},
-                    {name:'swapleft', selector:'.swap', is3d: true},
+                    {name:'swapleft', selector:'.swapleft, .swap', is3d: true},
+                    {name:'swapright', selector:'.swapright', is3d: true},
                     {name:'slidedown', selector:'.slidedown'},
                     {name:'slideright', selector:'.slideright'},
                     {name:'slideup', selector:'.slideup'},
@@ -74,35 +78,27 @@
                 ]
             }; // end defaults
 
-        function fx() {
-            var fx;
-            if (!!window.Zepto) {
-                fx = window.Zepto;
-                fx.fn.prop = fx.fn.attr;
-                
-                Event.prototype.isDefaultPrevented = function() {
-                  return this.defaultPrevented;
-                };
-            } else if (!!window.jQuery) {
-                fx = window.jQuery;
-                // trick to get Zepto/touch.js to work for jQuery
-                //window.Zepto = $;
-            } else {
-                throw('Either Zepto or jQuery is required but neither can be found.');
-            }
-            return fx;
-        }
-
         function warn(message) {
             if (window.console !== undefined && jQTSettings.debug === true) {
                 console.warn(message);
             }
         }
+
         function addAnimation(animation) {
             if (typeof(animation.selector) === 'string' && typeof(animation.name) === 'string') {
                 animations.push(animation);
             }
         }
+
+        function addTapHandler(tapHandler) {
+            if (typeof(tapHandler.name) === 'string'
+              && typeof(tapHandler.isSupported) === 'function'
+              && typeof(tapHandler.fn) === 'function') {
+
+                tapHandlers.push(tapHandler);
+            }
+        }
+
         function addPageToHistory(page, animation) {
             history.unshift({
                 page: page,
@@ -112,7 +108,7 @@
             });
         }
 
-        // Unfortunately, we can not assume the "tap" event
+        // Unfortunately, we can not assume the 'tap' event
         // is being used for links, forms, etc.
         function clickHandler(e) {
             // Figure out whether to prevent default
@@ -123,23 +119,24 @@
                 $el = $(e.target).closest(touchSelectors.join(', '));
             }
 
-            // Prevent default if we found an internal link (relative or absolute)
-            if ($el && $el.prop('href') && !$el.isExternalLink()) {
-                warn('Need to prevent default click behavior');
+            // Prevent default if we found an internal link
+            // (relative or absolute)
+            if ($el && $el.attr('href') && !$el.isExternalLink()) {
+                warn('Need to prevent default click behavior.');
                 e.preventDefault();
             } else {
-                warn('No need to prevent default click behavior');
+                warn('No need to prevent default click behavior.');
             }
 
             // Trigger a tap event if touchstart is not on the job
             if ($.support.touch) {
-                warn('Not converting click to a tap event because touch handler is on the job');
+                warn('Not converting click to a tap event because touch handler is on the job.');
             } else {
-                warn('Converting click event to a tap event because touch handlers are not present or off');
+                warn('Converting click event to a tap event because touch handlers are not present or off.');
                 $(e.target).trigger('tap', e);
             }
-
         }
+
         function doNavigation(fromPage, toPage, animation, goingBack) {
 
             goingBack = goingBack ? goingBack : false;
@@ -151,7 +148,7 @@
                 return false;
             }
 
-            // Error check for fromPage===toPage
+            // Error check for fromPage === toPage
             if (toPage.hasClass('current')) {
                 $.fn.unselect();
                 warn('You are already on the page you are trying to navigate to.');
@@ -167,7 +164,7 @@
             if ($.support.animationEvents && animation && jQTSettings.useAnimations) {
                 // Fail over to 2d animation if need be
                 if (!$.support.transform3d && animation.is3d) {
-                    warn('Did not detect support for 3d animations, falling back to ' + jQTSettings.defaultAnimation);
+                    warn('Did not detect support for 3d animations, falling back to ' + jQTSettings.defaultAnimation + '.');
                     animation.name = jQTSettings.defaultAnimation;
                 }
 
@@ -176,12 +173,12 @@
                     is3d = animation.is3d ? 'animating3d' : '';
 
                 if (goingBack) {
-                    finalAnimationName = finalAnimationName.replace(/left|right|up|down|in|out/, reverseAnimation );
+                    finalAnimationName = finalAnimationName.replace(/left|right|up|down|in|out/, reverseAnimation);
                 }
 
-                warn('finalAnimationName is ' + finalAnimationName);
+                warn('finalAnimationName is ' + finalAnimationName + '.');
 
-                // Bind internal "cleanup" callback
+                // Bind internal 'cleanup' callback
                 fromPage.bind('webkitAnimationEnd', navigationEndHandler);
 
                 // Trigger animations
@@ -189,25 +186,35 @@
 
                 var lastScroll = window.pageYOffset;
 
-                // Position the incoming page so toolbar is at top of viewport regardless of scroll position on from page
+                // Position the incoming page so toolbar is at top of
+                // viewport regardless of scroll position on from page
                 if (jQTSettings.trackScrollPositions === true) {
                     toPage.css('top', window.pageYOffset - (toPage.data('lastScroll') || 0));
                 }
-                
+
                 toPage.addClass(finalAnimationName + ' in current');
-                fromPage.addClass(finalAnimationName + ' out');
+                fromPage.removeClass('current').addClass(finalAnimationName + ' out inmotion');
 
                 if (jQTSettings.trackScrollPositions === true) {
                     fromPage.data('lastScroll', lastScroll);
-                    $('.scroll', fromPage).each(function(){
+                    $('.scroll', fromPage).each(function() {
                         $(this).data('lastScroll', this.scrollTop);
                     });
                 }
-
             } else {
                 toPage.addClass('current in');
+                fromPage.removeClass('current');
                 navigationEndHandler();
             }
+
+            // Housekeeping
+            $currentPage = toPage;
+            if (goingBack) {
+                history.shift();
+            } else {
+                addPageToHistory($currentPage, animation);
+            }
+            setHash($currentPage.attr('id'));
 
             // Private navigationEnd callback
             function navigationEndHandler(event) {
@@ -215,51 +222,57 @@
 
                 if ($.support.animationEvents && animation && jQTSettings.useAnimations) {
                     fromPage.unbind('webkitAnimationEnd', navigationEndHandler);
-                    fromPage.removeClass('current ' + finalAnimationName + ' out');
-                    toPage.removeClass(finalAnimationName);
+                    fromPage.removeClass(finalAnimationName + ' out inmotion');
+                    if (finalAnimationName) {
+                        toPage.removeClass(finalAnimationName);
+                    }
                     $body.removeClass('animating animating3d');
                     if (jQTSettings.trackScrollPositions === true) {
                         toPage.css('top', -toPage.data('lastScroll'));
 
                         // Have to make sure the scroll/style resets
                         // are outside the flow of this function.
-                        setTimeout(function(){
+                        setTimeout(function() {
                             toPage.css('top', 0);
                             window.scroll(0, toPage.data('lastScroll'));
-                            $('.scroll', toPage).each(function(){
+                            $('.scroll', toPage).each(function() {
                                 this.scrollTop = - $(this).data('lastScroll');
                             });
                         }, 0);
                     }
                 } else {
-                    fromPage.removeClass(finalAnimationName + ' out current');
+                    fromPage.removeClass(finalAnimationName + ' out inmotion');
+                    if (finalAnimationName) {
+                        toPage.removeClass(finalAnimationName);
+                    }
                     bufferTime += 260;
                 }
 
-                // In class is intentionally delayed, as it is our ghost click hack
-                setTimeout(function(){
+                // 'in' class is intentionally delayed,
+                // as it is our ghost click hack
+                setTimeout(function() {
                     toPage.removeClass('in');
+                    window.scroll(0,0);
                 }, bufferTime);
-
-                // Housekeeping
-                $currentPage = toPage;
-                if (goingBack) {
-                    history.shift();
-                } else {
-                    addPageToHistory($currentPage, animation);
-                }
 
                 fromPage.unselect();
 
-                setHash($currentPage.attr('id'));
-
                 // Trigger custom events
-                toPage.trigger('pageAnimationEnd', { direction:'in', animation: animation});
-                fromPage.trigger('pageAnimationEnd', { direction:'out', animation: animation});
+                toPage.trigger('pageAnimationEnd', {
+                    direction:'in',
+                    animation: animation,
+                    back: goingBack
+                });
+                fromPage.trigger('pageAnimationEnd', {
+                    direction:'out',
+                    animation: animation,
+                    back: goingBack
+                });
             }
 
             return true;
         }
+
         function reverseAnimation(animation) {
             var opposites={
                 'up' : 'down',
@@ -272,17 +285,18 @@
 
             return opposites[animation] || animation;
         }
+
         function getOrientation() {
             return orientation;
         }
-        function goBack() {
 
+        function goBack() {
             // Error checking
-            if (history.length < 1 ) {
+            if (history.length < 1) {
                 warn('History is empty.');
             }
 
-            if (history.length === 1 ) {
+            if (history.length === 1) {
                 warn('You are on the first panel.');
                 window.history.go(-1);
             }
@@ -296,10 +310,9 @@
                 warn('Could not go back.');
                 return false;
             }
-
         }
-        function goTo(toPage, animation) {
 
+        function goTo(toPage, animation) {
             var fromPage = history[0].page;
 
             if (typeof animation === 'string') {
@@ -330,27 +343,25 @@
                 return false;
             }
         }
+
         function hashChangeHandler(e) {
             if (location.hash === history[0].hash) {
-                warn('We are on the right panel');
+                warn('We are on the right panel.');
                 return true;
             } else if (location.hash === '') {
                 goBack();
                 return true;
+            } else if (history[1] && location.hash === history[1].hash) {
+                goBack();
+                return true;
             } else {
-                if( (history[1] && location.hash === history[1].hash) ) {
-                    goBack();
-                    return true;
-                } else {
-                    // Lastly, just try going to the ID...
-                    warn('Could not find ID in history, just forwarding to DOM element.');
-                    goTo($(location.hash), jQTSettings.defaultAnimation);
-                }
+                // Lastly, just try going to the ID...
+                warn('Could not find ID in history, just forwarding to DOM element.');
+                goTo($(location.hash), jQTSettings.defaultAnimation);
             }
         }
-        function init(options) {
-            jQTSettings = $.extend({}, defaults, options);
 
+        function initHairExtensions(options) {
             // Preload images
             if (jQTSettings.preloadImages) {
                 for (var i = jQTSettings.preloadImages.length - 1; i >= 0; i--) {
@@ -358,7 +369,8 @@
                 }
             }
 
-            // Set appropriate icon (retina display available in iOS 4.2 and later.)
+            // Set appropriate icon
+            // (retina display available in iOS 4.2 and later.)
             var precomposed = (jQTSettings.addGlossToIcon) ? '' : '-precomposed';
             if (jQTSettings.icon) {
                 hairExtensions += '<link rel="apple-touch-icon' + precomposed + '" href="' + jQTSettings.icon + '" />';
@@ -373,7 +385,7 @@
 
             // Set viewport
             if (jQTSettings.fixedViewport) {
-                hairExtensions += '<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>';
+                hairExtensions += '<meta name="viewport" content="initial-scale=1.0, maximum-scale=1.0, user-scalable=0"/>';
             }
 
             // Set full-screen
@@ -388,6 +400,24 @@
             if (hairExtensions) {
                 $head.prepend(hairExtensions);
             }
+        }
+
+        function initFXExtensions() {
+            // Define public jQuery functions
+            $.fn.isExternalLink = function() {
+                var $el = $(this);
+                return ($el.attr('target') === '_blank' || $el.attr('rel') === 'external' || $el.is('a[href^="http://maps.google.com"], a[href^="mailto:"], a[href^="tel:"], a[href^="javascript:"], a[href*="youtube.com/v"], a[href*="youtube.com/watch"]'));
+            };
+            $.fn.makeActive = function() {
+                return $(this).addClass('active');
+            };
+            $.fn.unselect = function(obj) {
+                if (obj) {
+                    obj.removeClass('active');
+                } else {
+                    $('.active').removeClass('active');
+                }
+            };
         }
 
         function getAnimation(el) {
@@ -411,8 +441,9 @@
 
             var targetPage = null;
 
-            // Call dom.createElement element directly instead of relying on $(nodes),
-            // to work around: https://github.com/madrobby/zepto/issues/312
+            // Call dom.createElement element directly
+            // instead of relying on $(nodes), to work around:
+            // https://github.com/madrobby/zepto/issues/312
             var div = document.createElement('div');
             div.innerHTML = nodes;
 
@@ -441,18 +472,119 @@
         }
 
         function orientationChangeHandler() {
-            $body.css('minHeight', 1000);
             scrollTo(0,0);
-            var bodyHeight = window.innerHeight;
-            $body.css('minHeight', bodyHeight);
-
-            orientation = Math.abs(window.orientation) == 90 ? 'landscape' : 'portrait';
+            orientation = Math.abs(window.orientation) === 90 ? 'landscape' : 'portrait';
             $body.removeClass('portrait landscape').addClass(orientation).trigger('turn', {orientation: orientation});
         }
+
         function setHash(hash) {
             // Sanitize
-            location.hash = '#' + hash.replace(/^#/, '');
+            if (jQTSettings.updateHash) {
+                location.hash = '#' + hash.replace(/^#/, '');
+            }
         }
+
+        // Document ready stuff
+        function start() {
+            // Store some properties in a support object
+            if (!$.support) $.support = {};
+            $.support.animationEvents = (typeof window.WebKitAnimationEvent !== 'undefined');
+            $.support.touch = (typeof window.TouchEvent !== 'undefined') && (window.navigator.userAgent.indexOf('Mobile') > -1) && jQTSettings.useFastTouch;
+            $.support.transform3d = supportForTransform3d();
+            $.support.ios5 = supportIOS5();
+
+            if (!$.support.touch) {
+                warn('This device does not support touch interaction, or it has been deactivated by the developer. Some features might be unavailable.');
+            }
+            if (!$.support.transform3d) {
+                warn('This device does not support 3d animation. 2d animations will be used instead.');
+            }
+
+            // Add extensions
+            for (var i=0, max=extensions.length; i < max; i++) {
+                var fn = extensions[i];
+                if ($.isFunction(fn)) {
+                    $.extend(publicObj, fn(publicObj));
+                }
+            }
+
+            // Add extensions tapHandlers
+            for (var i=0, max=extTapHandlers.length; i < max; i++) {
+                addTapHandler(extTapHandlers[i]);
+            }
+            // Add default tapHandlers
+            addDefaultTapHandlers();
+
+            // Add animations
+            for (var k=0, max=defaults.animations.length; k < max; k++) {
+                var animation = defaults.animations[k];
+                if (jQTSettings[animation.name + 'Selector'] !== undefined) {
+                    animation.selector = jQTSettings[animation.name + 'Selector'];
+                }
+                addAnimation(animation);
+            }
+
+            // Create an array of stuff that needs touch event handling
+            touchSelectors.push(jQTSettings.touchSelector);
+            touchSelectors.push(jQTSettings.backSelector);
+            touchSelectors.push(jQTSettings.submitSelector);
+            $(touchSelectors.join(', ')).css('-webkit-touch-callout', 'none');
+
+            // Make sure we have a jqt element
+            $body = $('#jqt');
+            var anatomy_lessons = [];
+
+            if ($body.length === 0) {
+                warn('Could not find an element with the id "jqt", so the body id has been set to "jqt". If you are having any problems, wrapping your panels in a div with the id "jqt" might help.');
+                $body = $(document.body).attr('id', 'jqt');
+            }
+
+            // Add some specific css if need be
+            if ($.support.transform3d) {
+                anatomy_lessons.push('supports3d');
+            }
+
+            if (jQTSettings.useTouchScroll) {
+                if ($.support.ios5) {
+                    anatomy_lessons.push('touchscroll');
+                } else {
+                    anatomy_lessons.push('autoscroll');
+                }
+            }
+
+            if (jQTSettings.fullScreenClass && window.navigator.standalone === true) {
+                anatomy_lessons.push(jQTSettings.fullScreenClass, jQTSettings.statusBar);
+            }
+
+            // Bind events
+            $body
+                .addClass(anatomy_lessons.join(' '))
+                .bind('click', clickHandler)
+                .bind('orientationchange', orientationChangeHandler)
+                .bind('submit', submitHandler)
+                .bind('tap', tapHandler)
+                .bind($.support.touch ? 'touchstart' : 'mousedown', touchStartHandler)
+                .trigger('orientationchange');
+
+            $(window).bind('hashchange', hashChangeHandler);
+
+            var startHash = location.hash;
+
+            // Determine what the initial view should be
+            if ($('#jqt > .current').length === 0) {
+                $currentPage = $('#jqt > *:first-child').addClass('current');
+            } else {
+                $currentPage = $('#jqt > .current');
+            }
+
+            setHash($currentPage.attr('id'));
+            addPageToHistory($currentPage);
+
+            if ($(startHash).length === 1) {
+                goTo(startHash);
+            }
+        }
+
         function showPageByHref(href, options) {
 
             var defaults = {
@@ -465,7 +597,7 @@
 
             var settings = $.extend({}, defaults, options);
 
-            if (href != '#') {
+            if (href !== '#') {
                 $.ajax({
                     url: href,
                     data: settings.data,
@@ -473,7 +605,7 @@
                     success: function (data) {
                         var firstPage = insertPages(data, settings.animation);
                         if (firstPage) {
-                            if (settings.method == 'GET' && jQTSettings.cacheGetRequests === true && settings.$referrer) {
+                            if (settings.method === 'GET' && jQTSettings.cacheGetRequests === true && settings.$referrer) {
                                 settings.$referrer.attr('href', '#' + firstPage.attr('id'));
                             }
                             if (settings.callback) {
@@ -494,6 +626,7 @@
                 settings.$referrer.unselect();
             }
         }
+
         function submitHandler(e, callback) {
 
             $(':focus').trigger('blur');
@@ -505,7 +638,7 @@
             if ($form.length && $form.is(jQTSettings.formSelector) && $form.attr('action')) {
                 showPageByHref($form.attr('action'), {
                     data: $form.serialize(),
-                    method: $form.attr('method') || "POST",
+                    method: $form.attr('method') || 'POST',
                     animation: getAnimation($form),
                     callback: callback
                 });
@@ -513,18 +646,20 @@
             }
             return true;
         }
+
         function submitParentForm($el) {
 
             var $form = $el.closest('form');
             if ($form.length === 0) {
-                warn('No parent form found');
+                warn('No parent form found.');
             } else {
-                warn('About to submit parent form');
+                warn('About to submit parent form.');
                 $form.trigger('submit');
                 return false;
             }
             return true;
         }
+
         function supportForTransform3d() {
 
             var head, body, style, div, result;
@@ -550,20 +685,22 @@
             div.parentNode.removeChild(div);
 
             // Pass back result
-            warn('Support for 3d transforms: ' + result);
+            warn('Support for 3d transforms: ' + result + '.');
             return result;
         }
+
         function supportIOS5() {
             var support = false;
             var REGEX_IOS_VERSION = /OS (\d+)(_\d+)* like Mac OS X/i;
-  
+
             var agentString = window.navigator.userAgent;
             if (REGEX_IOS_VERSION.test(agentString)) {
                 support = (REGEX_IOS_VERSION.exec(agentString)[1] >= 5);
             }
             return support;
         }
-        function touchStartHandler(e){
+
+        function touchStartHandler(e) {
 
             var $el = $(e.target),
                 selectors = touchSelectors.join(', ');
@@ -574,21 +711,21 @@
             }
 
             // Make sure we have a tappable element
-            if ($el.length && $el.prop('href')) {
+            if ($el.length && $el.attr('href')) {
                 $el.addClass('active');
             }
 
             // Remove our active class if we move
-            $el.on($.support.touch ? 'touchmove' : 'mousemove', function(){
+            $el.on($.support.touch ? 'touchmove' : 'mousemove', function() {
                 $el.removeClass('active');
             });
 
-            $el.on('touchend', function(){
+            $el.on('touchend', function() {
                 $el.unbind('touchmove mousemove');
             });
-
         }
-        function tapHandler(e){
+
+        function tapHandler(e) {
 
             if (e.isDefaultPrevented()) {
                 return true;
@@ -603,170 +740,137 @@
             }
 
             // Make sure we have a tappable element
-            if (!$el.length || !$el.prop('href')) {
-                warn('Could not find a link related to tapped element');
-                return false;
+            if (!$el.length || !$el.attr('href')) {
+                warn('Could not find a link related to tapped element.');
+                return true;
             }
 
             // Init some vars
             var target = $el.attr('target'),
                 hash = $el.prop('hash'),
-                href = $el.prop('href'),
-                animation = null;
+                href = $el.attr('href');
 
-            if ($el.isExternalLink()) {
-                $el.unselect();
-                return true;
+            var params = {
+                e: e,
+                $el: $el,
+                target: target,
+                hash: hash,
+                href: href,
+                jQTSettings: jQTSettings
+            };
 
-            } else if ($el.is(jQTSettings.backSelector)) {
-                // User clicked or tapped a back button
-                goBack(hash);
-
-            } else if ($el.is(jQTSettings.submitSelector)) {
-                // User clicked or tapped a submit element
-                submitParentForm($el);
-
-            } else if (target === '_webapp') {
-                // User clicked or tapped an internal link, fullscreen mode
-                window.location = href;
-                return false;
-
-            } else if (href === '#') {
-                // Allow tap on item with no href
-                $el.unselect();
-                return true;
-            } else {
-                animation = getAnimation($el);
-
-                if (hash && hash !== '#') {
-                    // Internal href
-                    $el.addClass('active');
-                    goTo($(hash).data('referrer', $el), animation, $el.hasClass('reverse'));
-                    return false;
-                } else {
-                    // External href
-                    $el.addClass('loading active');
-                    showPageByHref($el.prop('href'), {
-                        animation: animation,
-                        callback: function() {
-                            $el.removeClass('loading');
-                            setTimeout($.fn.unselect, 250, $el);
-                        },
-                        $referrer: $el
-                    });
-                    return false;
+            // Loop thru all handlers
+            for (var i=0, len=tapHandlers.length; i<len; i++) {
+                var handler = tapHandlers[i];
+                var supported = handler.isSupported(e, params);
+                if (supported) {
+                    var flag = handler.fn(e, params);
+                    return flag;
                 }
             }
         }
 
+        function addDefaultTapHandlers() {
+            addTapHandler({
+                name: 'external-link',
+                isSupported: function(e, params) {
+                    return params.$el.isExternalLink();
+                },
+                fn: function(e, params) {
+                    params.$el.unselect();
+                    return true;
+                }
+            });
+            addTapHandler({
+                name: 'back-selector',
+                isSupported: function(e, params) {
+                    return params.$el.is(params.jQTSettings.backSelector);
+                },
+                fn: function(e, params) {
+                    // User clicked or tapped a back button
+                    goBack(params.hash);
+                }
+            });
+            addTapHandler({
+                name: 'submit-selector',
+                isSupported: function(e, params) {
+                    return params.$el.is(params.jQTSettings.submitSelector);
+                },
+                fn: function(e, params) {
+                    // User clicked or tapped a submit element
+                    submitParentForm(params.$el);
+                }
+            });
+            addTapHandler({
+                name: 'webapp',
+                isSupported: function(e, params) {
+                    return params.target === '_webapp';
+                },
+                fn: function(e, params) {
+                    // User clicked or tapped an internal link, fullscreen mode
+                    window.location = params.href;
+                    return false;
+                }
+            });
+            addTapHandler({
+                name: 'no-op',
+                isSupported: function(e, params) {
+                    return params.href === '#';
+                },
+                fn: function(e, params) {
+                    // Allow tap on item with no href
+                    params.$el.unselect();
+                    return true;
+                }
+            });
+            addTapHandler({
+                name: 'standard',
+                isSupported: function(e, params) {
+                    return params.hash && params.hash !== '#';
+                },
+                fn: function(e, params) {
+                    var animation = getAnimation(params.$el);
+                    // Internal href
+                    params.$el.addClass('active');
+                    goTo(
+                        $(params.hash).data('referrer', params.$el),
+                        animation,
+                        params.$el.hasClass('reverse')
+                    );
+                    return false;
+                }
+            });
+            addTapHandler({
+                name: 'external',
+                isSupported: function(e, params) {
+                    return true;
+                },
+                fn: function(e, params) {
+                    var animation = getAnimation(params.$el);
+
+                    // External href
+                    params.$el.addClass('loading active');
+                    showPageByHref(params.$el.attr('href'), {
+                        animation: animation,
+                        callback: function() {
+                            params.$el.removeClass('loading');
+                            setTimeout($.fn.unselect, 250, params.$el);
+                        },
+                        $referrer: params.$el
+                    });
+                    return false;
+                }
+            });
+        }
+
         // Get the party started
-        init(options);
+        jQTSettings = $.extend({}, defaults, options);
 
-        // Document ready stuff
-        $(document).ready(function RUMBLE() {
-            // Store some properties in a support object
-            if (!$.support) $.support = {};
-            $.support.animationEvents = (typeof window.WebKitAnimationEvent != 'undefined');
-            $.support.touch = (typeof window.TouchEvent != 'undefined') && (window.navigator.userAgent.indexOf('Mobile') > -1) && jQTSettings.useFastTouch;
-            $.support.transform3d = supportForTransform3d();
-            $.support.ios5 = supportIOS5();
+        initHairExtensions(options);
 
-            if (!$.support.touch) {
-                warn('This device does not support touch interaction, or it has been deactivated by the developer. Some features might be unavailable.');
-            }
-            if (!$.support.transform3d) {
-                warn('This device does not support 3d animation. 2d animations will be used instead.');
-            }
+        initFXExtensions();
 
-            // Define public jQuery functions
-            $.fn.isExternalLink = function() {
-                var $el = $(this);
-                return ($el.attr('target') == '_blank' || $el.attr('rel') == 'external' || $el.is('a[href^="http://maps.google.com"], a[href^="mailto:"], a[href^="tel:"], a[href^="javascript:"], a[href*="youtube.com/v"], a[href*="youtube.com/watch"]'));
-            };
-            $.fn.makeActive = function() {
-                return $(this).addClass('active');
-            };
-            $.fn.unselect = function(obj) {
-                if (obj) {
-                    obj.removeClass('active');
-                } else {
-                    $('.active').removeClass('active');
-                }
-            };
-
-            // Add extensions
-            for (var i=0, max=extensions.length; i < max; i++) {
-                var fn = extensions[i];
-                if ($.isFunction(fn)) {
-                    $.extend(publicObj, fn(publicObj));
-                }
-            }
-
-            // Add animations
-            for (var j=0, max_anims=defaults.animations.length; j < max_anims; j++) {
-                var animation = defaults.animations[j];
-                if(jQTSettings[animation.name + 'Selector'] !== undefined){
-                    animation.selector = jQTSettings[animation.name + 'Selector'];
-                }
-                addAnimation(animation);
-            }
-
-            // Create an array of stuff that needs touch event handling
-            touchSelectors.push(jQTSettings.touchSelector);
-            touchSelectors.push(jQTSettings.backSelector);
-            touchSelectors.push(jQTSettings.submitSelector);
-            $(touchSelectors.join(', ')).css('-webkit-touch-callout', 'none');
-
-            // Make sure we have a jqt element
-            $body = $('#jqt');
-            var anatomy_lessons = [];
-
-            if ($body.length === 0) {
-                warn('Could not find an element with the id "jqt", so the body id has been set to "jqt". If you are having any problems, wrapping your panels in a div with the id "jqt" might help.');
-                $body = $(document.body).attr('id', 'jqt');
-            }
-
-            // Add some specific css if need be
-            if ($.support.transform3d) {
-                anatomy_lessons.push('supports3d');
-            }
-            if ($.support.ios5 && jQTSettings.useTouchScroll) {
-                anatomy_lessons.push('touchscroll');
-            }
-
-            if (jQTSettings.fullScreenClass && window.navigator.standalone === true) {
-                anatomy_lessons.push(jQTSettings.fullScreenClass, jQTSettings.statusBar);
-            }
-
-            // Bind events
-            
-            $body
-                .addClass(anatomy_lessons.join(' '))
-                .bind('click', clickHandler)
-                .bind('orientationchange', orientationChangeHandler)
-                .bind('submit', submitHandler)
-                .bind('tap', tapHandler)
-                .bind( $.support.touch ? 'touchstart' : 'mousedown', touchStartHandler)
-                .trigger('orientationchange');
-            
-            $(window).bind('hashchange', hashChangeHandler);
-
-            var startHash = location.hash;
-
-            // Determine what the initial view should be
-            if ($('#jqt > .current').length === 0) {
-                $currentPage = $('#jqt > *:first-child').addClass('current');
-            } else {
-                $currentPage = $('#jqt > .current');
-            }
-            
-            setHash($currentPage.attr('id'));
-            addPageToHistory($currentPage);
-
-            if ($(startHash).length === 1) {
-                goTo(startHash);
-            }
-        });
+        jQTSettings.starter(start);
 
         // Expose public methods and properties
         publicObj = {
@@ -782,11 +886,20 @@
         };
         return publicObj;
     };
-    
+
     $.jQTouch.prototype.extensions = [];
-            
-            // Extensions directly manipulate the jQTouch object, before it's initialized.
-            $.jQTouch.addExtension = function(extension) {
+    $.jQTouch.prototype.tapHandlers = [];
+
+    // Extensions directly manipulate the jQTouch object,
+    // before it's initialized
+    $.jQTouch.addExtension = function(extension) {
         $.jQTouch.prototype.extensions.push(extension);
-            };
+    };
+
+    // Experimental tap handlers that can bypass
+    // default jQTouch tap handling
+    $.jQTouch.addTapHandler = function(extension) {
+        $.jQTouch.prototype.tapHandlers.push(extension);
+    };
+
 })(); // Double closure, ALL THE WAY ACROSS THE SKY

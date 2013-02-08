@@ -37,7 +37,7 @@ public:
 		setBeepSound(BEEP_WAV);
 
 		// Turn off zoom.
-		getWebView()->disableZoom();
+		//getWebView()->disableZoom();
 	}
 
 	virtual ~TwitterMoblet()

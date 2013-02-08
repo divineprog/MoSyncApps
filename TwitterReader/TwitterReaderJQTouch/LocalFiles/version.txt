@@ -1,1 +1,2 @@
-This example uses jQtouch 1.0 beta rc4
+This example uses jQTouch master branch fetched from GitHub
+on Feb 8, 2013: https://github.com/senchalabs/jQTouch

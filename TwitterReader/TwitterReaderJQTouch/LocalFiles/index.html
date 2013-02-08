@@ -11,7 +11,7 @@
 	<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 	<link rel="stylesheet" href="jqtouch/themes/css/apple.css">
-	<script src="jqtouch/src/zepto.js" charset="utf-8"></script>
+	<script src="jqtouch/lib/jquery/jquery-1.7.js" charset="utf-8"></script>
 	<script src="jqtouch/src/jqtouch.js" charset="utf-8"></script>
 
 	<script src="js/wormhole.js" charset="utf-8"></script>
@@ -39,7 +39,7 @@
 			{
 				console.log("@@@ app.ui.goBack jQT.history.length: " + jQT.history.length);
 				
-				if (jQT.history.length == 0)
+				if (jQT.history.length == 1)
 				{
 					// Send the app to the background if
 					// we are on the home screen (first page).
@@ -58,9 +58,18 @@
 			 */
 			app.ui.initializeFramework = function()
 			{
-				window.jQT = $.jQTouch({
+				window.jQT = $.jQTouch(
+				{
 					statusBar: 'black'
 				});
+				
+				// Fix from David Hull to make Back button render on Android:
+				// https://github.com/senchalabs/jQTouch/issues/408#issuecomment-5293449
+				if (mosync.isAndroid)
+				{
+					$('.back').removeClass('back').addClass('cancel');
+				}
+				
 				//jQT.settings.debug = false;
 			};
 
@@ -107,7 +116,7 @@
 			 */
 			app.ui.showTweetList = function(tweets)
 			{
-				console.log("@@@ showTweetList");
+				console.log("@@@ showTweetList: " + tweets);
 				
 				var results = "";
 				if ((!tweets) ||
@@ -123,43 +132,14 @@
 						results += "<li>" + tweets[i].text + "</li>";
 					}
 				}
-				$("#tweetList").html(results);
+				$("#tweetListContent").html(results);
 			};
 
-			/**
-			 * We override (replace) this function, because
-			 * Zepto.js does not support the .error construct.
-			 *
-			 * Downloads Tweets for a specific user.
-			 * @param user Twitter user name.
-			 * @param callbackFun Function called when download has
-			 * finished. Parameters: callbackFun(tweetArray).
-			 */
-			app.getTweetsForUser = function(user, callbackFun)
-			{
-				console.log("@@@ app.getTweetsForUser");
-				 
-				// Create the Twitter url.
-				var twitterUrl =
-					"http://api.twitter.com/1/statuses/" +
-					"user_timeline.json?screen_name=" +
-					user;
-
-				// Do ajax call to get an array of Tweets.
-				$.getJSON(twitterUrl, function(tweets)
-				{
-					callbackFun(tweets);
-				});
-				/*.error(function(jqXHR, textStatus, errorThrown)
-				{
-					//alert("getJSON error: " + textStatus);
-					callbackFun(null);
-				});*/
-			};
 		})();
 	</script>
 </head>
 <body>
+	<!-- Page 1: Home page -->
 	<div id="home">
 		<div class="toolbar">
 			<h1>TwitterReader</h1>
@@ -177,7 +157,9 @@
 			<li class="arrow">
 				<a onclick="app.ui.showTweets()">View Tweets by this user</a>
 			</li>
-			<li><a onclick="app.ui.addFavouriteUser()">Add to Favorites List</a></li>
+			<li>
+				<a onclick="app.ui.addFavouriteUser()">Add to Favourites List</a>
+			</li>
 		</ul>
 		<ul id="favouriteList" class="rounded">
 			<li>Favorites:</li>
@@ -185,14 +167,17 @@
 		</ul>
 	</div>
 
+	<!-- Page 2: List of tweets -->
 	<div id="tweetList">
 		<div class="toolbar">
 			<h1 id="tweetsTitle">TweetList</h1>
 			<a class="button back" onclick="app.ui.goBack()">Back</a>
+			
 		</div>
 		<ul id="tweetListContent" class="rounded">
 			<li>Loading...</li>
 		</ul>
 	</div>
+
 </body>
 </html>
