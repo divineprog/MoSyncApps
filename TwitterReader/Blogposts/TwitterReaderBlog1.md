@@ -18,15 +18,15 @@ This is the first in a series of blog posts where we evaluate JavaScript UI fram
 
 The approach we are using is based on taking a mobile hybrid app and implement different versions of it using different user interface libraries. That is, we are using the same app as a test case for the various UI frameworks we are evaluating.
 
-The test case app is called TwitterReader, a JS/C++ hybrid app that displays Twitter feeds.
+The test case app is called TwitterReader, a MoSync HTML5/JS app that displays Twitter feeds. This app is based on the [WebViewTwitter](https://github.com/MoSync/MoSync/tree/master/examples/html5/WebViewTwitter) example app that comes with the [MoSync SDK](http://www.mosync.com/sdk). Orignally this app used the [jQTouch](https://github.com/senchalabs/jQTouch) UI library.
 
-For each framework tested, we implement the UI of the app using that framwork. Then we run the  app on different devices, and evaluate it using the criteria described below.
+For each framework tested, we implement the UI of the app using that framwork. Then we run the app on different devices, and evaluate it using the criteria described below.
 
-The evaluation critera we use are based on (1) the end-user experience, and (2) the developer experience.
+The evaluation method is simular to [heuristic evaluation](http://en.wikipedia.org/wiki/Heuristic_evaluation), and the evaluation criteria (heuristics) we use are based on (1) the end-user experience, and (2) the developer experience.
 
 User experience critera:
 
-* Graphical appearance (aesthetic impression, does the UI look "good"?)
+* Graphical appearance (aesthetic impression, does the UI look "good")
 * Performance (how "snappy" is the UI)
 
 Developer experience criteria:
@@ -82,7 +82,7 @@ Functionality:
 4. All parts of the UI can be implemented, with only some small features are missing.
 5. All of the UI features can be fully implemented.
 
-Again, the evaluation critera relate to the TwitterReader example app. A user interface that has the UI features of the original jqTouch UI would get 5 on this scale. This criteria is also related to developer experience. A skilled developer who knows the UI framework well, could probably implement missing functionality.
+Again, the evaluation critera relate to the TwitterReader example app. A user interface that has the UI features of the original jQTouch UI would get 5 on this scale. This criteria is also related to developer experience. A skilled developer who knows the UI framework well, could probably implement missing functionality.
 
 Framework support:
 
@@ -99,13 +99,13 @@ This gives a score from 0 to 4 (0 = does not run on any platform, 4 = runs on al
 
 ## Overview of the test app
 
-The TwitterReader app is based on the example app WebViewTwitter, which is shipped with the MoSync SDK. The app is a JS/C++ hybrid app that displays Twitter feeds.
+The TwitterReader app is based on the example app WebViewTwitter, which is shipped with the MoSync SDK. The app is a HTML5/JS app that displays Twitter feeds.
 
-Here are screenshots of the original version of the app, which is implemented using the jqTouch library.
+Here are screenshots of the original version of the app, which is implemented using the jQTouch library.
 
 TODO: Add screenshots.
 
-You enter a Twitter use name, and the recent tweets for that user is displayed on a separate screen. You can also save the user name in a list of favourite users, and later use that as a shortcut. Favourites are stored on the device in a text file (no method for removing items from the list is currently provided).
+You enter a Twitter use name, and the recent tweets for that user is displayed on a separate screen. You can also save the user name in a list of favourite users, and later use that as a shortcut. Favourites are stored on the device using HTML5 Local Storage (no method for removing items from the list is currently provided).
 
 ## In the code
 
@@ -121,16 +121,14 @@ Since there are several versions of the app implemented using different UI libra
 
 The appication layer contains logic for the application. The UI layer is sprit in two parts, a general part and a specific part. Using this approach, only one layer needs to be rewritten/updated when a new UI library is used. 
 
-The app also contains code written in C++. This includes start up code and the implementation of a file handling library, which is used from JavaScript. The C++ code is shared by all variations of the TwitterReader app.
-
 ### Files
 
 Shared files:
 
 * [app.js](https://github.com/divineprog/MoSyncApps/tree/master/TwitterReader/Common/js/app.js) - Contains the app object (application layer)
 * [app.ui.js](https://github.com/divineprog/MoSyncApps/tree/master/TwitterReader/Common/js/app.ui.js) - Contains the app.ui object (https://github.com/divineprog/MoSyncApps/tree/master/TwitterReader/Common/js/app.js) (general UI layer)
+* [wormhole.js](https://github.com/divineprog/MoSyncApps/tree/master/TwitterReader/Common/js/wormhole.js) - Contains the app.ui object (https://github.com/divineprog/MoSyncApps/tree/master/TwitterReader/Common/js/wormhole.js) (general UI layer)
 * [main.cpp](https://github.com/divineprog/MoSyncApps/tree/master/TwitterReader/Common/cpp/main.cpp) - Start up code that creates the app
-* [FileMessageHandler.h](https://github.com/divineprog/MoSyncApps/tree/master/TwitterReader/Common/cpp/FileMessageHandler.h), [FileMessageHandler.cpp](https://github.com/divineprog/MoSyncApps/tree/master/TwitterReader/Common/cpp/FileMessageHandler.cpp) - File handling functions
 
 Framework specific files:
 
