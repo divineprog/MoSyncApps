@@ -136,10 +136,10 @@ Framework specific files:
 
 Similar to how class-based languages use overriding of methods in a superclass to implement specific behaviour, the JavaScript code in index.html replaces/fills in functions in the app.up object. Browse the code to see how this is done.
 
-For Part 1, we have tested jqTouch and iUI, here are the projects and files:
+For Part 1, we have tested jqTouch, iUI, and jQuery Mobile. Here are the projects and files:
 
 * [TwitterReaderJQTouch](https://github.com/divineprog/MoSyncApps/tree/master/TwitterReader/TwitterReaderJQTouch) - [index.html](https://github.com/divineprog/MoSyncApps/tree/master/TwitterReader/TwitterReaderJQTouch/LocalFiles/index.html)
-* [TwitterReaderIUI](https://github.com/divineprog/MoSyncApps/tree/master/TwitterReader/TwitterReaderIUI) - [index.html](https://github.com/divineprog/MoSyncApps/tree/master/TwitterReader/TwitterReaderIUI/LocalFiles/index.html)
+* [TwitterReaderIUI](https://github.com/divineprog/MoSyncApps/tree/master/TwitterReader/TwitterReaderIUI) - [index.html](https://github.com/divineprog/MoSyncApps/tree/master/TwitterReader/TwitterReaderIUI/LocalFiles/index.html)* [TwitterReaderJQueryMobile](https://github.com/divineprog/MoSyncApps/tree/master/TwitterReader/TwitterReaderJQueryMobile) - [index.html](https://github.com/divineprog/MoSyncApps/tree/master/TwitterReader/TwitterReaderJQueryMobile/LocalFiles/index.html)
 
 ## jQTouch
 
@@ -160,6 +160,18 @@ Score: 4
 Total score for jQTouch: X
 
 ## iUI
+
+### Look (aesthetic impression)
+
+TODO: Screenshots.
+
+### Performance (how "snappy" is the UI)
+
+### Ease of understanding the framework
+
+### Functionality
+
+## jQuery Mobile
 
 ### Look (aesthetic impression)
 
