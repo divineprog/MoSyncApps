@@ -8,7 +8,9 @@ using namespace MAUtil;
 using namespace NativeUI;
 
 /**
- * TODO: Comment.
+ * This is main UI component that holds other components.
+ * The idea is to have the root UI separate, so that
+ * other UI components can be added in a modular way.
  */
 class MainUI
 {
@@ -37,7 +39,7 @@ public:
 
 	void removeChild(Widget* widget)
 	{
-		mLayout->addChild(widget);
+		mLayout->removeChild(widget);
 	}
 
 	void show()
@@ -51,7 +53,8 @@ private:
 };
 
 /**
- * TODO: Comment.
+ * The UI module that shows the live camera preview.
+ * Has a button for taking a snapshot.
  */
 class PreviewUI
 {
@@ -65,12 +68,14 @@ public:
 	{
 		// Create a Vertical Layout that will hold widgets.
 		mLayout = new VerticalLayout();
+		/*
 		mLayout->setTopPosition(0);
 		mLayout->setLeftPosition(0);
 		mLayout->setHeight(500);
 		mLayout->setWidth(500);
-		//mLayout->fillSpaceHorizontally();
-		//mLayout->wrapContentVertically();
+		*/
+		mLayout->fillSpaceHorizontally();
+		mLayout->wrapContentVertically();
 
 		// Create Camera Preview.
 		mCameraPreview = new CameraPreview();
@@ -78,12 +83,24 @@ public:
 		mCameraPreview->fillSpaceVertically();
 		mLayout->addChild(mCameraPreview);
 
-		// Create a button.
+		// Create snapshot button.
 		mButton = new Button();
-		mButton->setText("Take Snapshot");
 		mButton->fillSpaceHorizontally();
 		mButton->wrapContentVertically();
 		mLayout->addChild(mButton);
+		updateSnapshotButtonText("show");
+	}
+
+	void updateSnapshotButtonText(String state)
+	{
+		if (state == "show")
+		{
+			mButton->setText("Take Snapshot");
+		}
+		else
+		{
+			mButton->setText("Hide Snapshot");
+		}
 	}
 
 	void addButtonListener(ButtonListener* listener)
@@ -120,21 +137,25 @@ public:
 
 	void createUI()
 	{
-		// Create the image widget used to display snapshots
-		// (this is added to the layout dynamically).
-		mImageWidget = new Image();
+		// Initiali<e image object handles.
 		mImage = NULL;
+		mImageHandle = NULL;
+
+		// Create the image widget used to display snapshots
+		// (it will be added to the layout dynamically).
+		MAExtent screenSize = maGetScrSize();
+		mImageWidget = new Image();
+		mImageWidget->setTopPosition(50);
+		mImageWidget->setLeftPosition(50);
+		mImageWidget->setWidth(EXTENT_X(screenSize) - 100);
+		mImageWidget->setHeight(EXTENT_Y(screenSize) - 150);
+		mImageWidget->setBackgroundColor(0x770000);
+		mImageWidget->setAlpha(1.0);
 	}
 
 	Widget* getTopWidget()
 	{
-		Button* b = new Button();
-		b->setText("Hello World");
-		b->fillSpaceHorizontally();
-		b->wrapContentVertically();
-		return b;
-
-		//return mImageWidget;
+		return mImageWidget;
 	}
 
 	void obtainImage()
@@ -150,18 +171,27 @@ public:
 			if (snapshotResult < 0)
 			{
 				// An error occurred while taking the snapshot.
-				maDestroyPlaceholder(mImage);
-				mImage = NULL;
+				releaseImage();
+				return;
+			}
+
+			// Create a bitmap the image widget can display.
+			mImageHandle = maCreatePlaceholder();
+			int result = maCreateImageFromData(
+				mImageHandle,
+				mImage,
+				0,
+				maGetDataSize(mImage));
+			if (result != RES_OK)
+			{
+				releaseImage();
 				return;
 			}
 
 			// Show the image in the image widget.
-			mImageWidget->setTopPosition(400);
-			mImageWidget->setLeftPosition(20);
-			mImageWidget->setHeight(300);
-			mImageWidget->setWidth(300);
-			mImageWidget->setImage(mImage);
-			mImageWidget->setScaleMode(NativeUI::IMAGE_SCALE_XY);
+			mImageWidget->setImage(mImageHandle);
+			//mImageWidget->setScaleMode(IMAGE_SCALE_XY);
+			mImageWidget->setScaleMode(IMAGE_SCALE_PRESERVE_ASPECT);
 		}
 	}
 
@@ -172,6 +202,13 @@ public:
 			// Deallocate the image.
 			maDestroyPlaceholder(mImage);
 			mImage = NULL;
+		}
+
+		if (mImageHandle)
+		{
+			// Deallocate the image.
+			maDestroyPlaceholder(mImageHandle);
+			mImageHandle = NULL;
 		}
 	}
 
@@ -188,6 +225,7 @@ public:
 private:
     Image* mImageWidget;
     MAHandle mImage;
+    MAHandle mImageHandle;
 };
 
 /**
@@ -237,14 +275,6 @@ public:
 		mMainUI->addChild(mPreviewUI->getTopWidget());
 		mPreviewUI->addButtonListener(this);
 
-		/*
-		Button* b = new Button();
-		b->setText("Take Snapshot");
-		b->fillSpaceHorizontally();
-		b->wrapContentVertically();
-		mMainUI->addChild(b);
-		*/
-
 		mMainUI->show();
 	}
 
@@ -268,31 +298,18 @@ public:
 	{
 		if (mSnapshotUI->imageIsHidden())
 		{
-			((Button*) button)->setText("Hide Snapshot");
-			showImage();
+			// Show the camera snapshot.
+			mSnapshotUI->obtainImage();
+			maCameraStart(); // Hack to start the camera after snap.
+			mMainUI->addChild(mSnapshotUI->getTopWidget());
+			mPreviewUI->updateSnapshotButtonText("hide");
 		}
 		else
 		{
-			((Button*) button)->setText("Take Snapshot");
-			hideImage();
-		}
-	}
-
-	void showImage()
-	{
-		if (mSnapshotUI->imageIsHidden())
-		{
-			mSnapshotUI->obtainImage();
-			mMainUI->addChild(mSnapshotUI->getTopWidget());
-		}
-	}
-
-	void hideImage()
-	{
-		if (mSnapshotUI->imageIsVisible())
-		{
+			// Hide the camera snapshot.
 			mSnapshotUI->releaseImage();
 			mMainUI->removeChild(mSnapshotUI->getTopWidget());
+			mPreviewUI->updateSnapshotButtonText("show");
 		}
 	}
 
