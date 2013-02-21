@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="viewport" content="width=devicewidth, initial-scale=1.0, maximum-scale=1.0, user-scalable=0">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+	
+		<link rel="stylesheet" href="jqtouch/themes/css/apple.css">
+		<script src="jqtouch/lib/jquery/jquery-1.7.js" charset="utf-8"></script>
+		<script src="jqtouch/src/jqtouch.js" charset="utf-8"></script>
+	
+		<script src="js/wormhole.js" charset="utf-8"></script>
+		<script type="text/javascript" src="flotr2.min.js"></script>
+    	
+		<style type="text/css">
+		.graph {
+			width : 500px;
+			height: 400px;
+			margin: 40px auto;
+		}
+		</style>
+    
+		<script type="text/javascript">
+			// The "deviceready" event is sent when the page
+			// has finished loading.
+			document.addEventListener(
+				"deviceready",
+				initialize,
+				true);
+			
+			// Close the application when the back key is pressed (Android).
+			document.addEventListener(
+				"backbutton",
+				function() { mosync.app.exit(); },
+				true);
+
+			// Set the JQT global variable.
+			window.jQT = $.jQTouch(
+			{
+				statusBar: 'black'
+			});
+
+			function initialize()
+			{
+				if (mosync.isAndroid)
+				{
+					// Fix from David Hull to make Back button render on Android:
+					// https://github.com/senchalabs/jQTouch/issues/408#issuecomment-5293449
+					$('.back').removeClass('back').addClass('cancel');
+				}
+			}
+
+			function goPage(pageId)
+			{
+				jQT.goTo("#" + pageId);
+				displayGraph(pageId + '_graph')
+			}
+			
+			function goBack()
+			{
+				runAnimation = false;
+				jQT.goBack();
+			}
+			
+			var runAnimation = true;
+			
+		    function displayGraph(graphId) 
+		    {
+		        var
+		          container = document.getElementById(graphId),
+		          start = (new Date).getTime(),
+		          data, graph, offset, i;
+
+				runAnimation = true;
+				
+		        // Draw a sine curve at time t
+		        function animate (t) {
+		
+		          data = [];
+		          offset = 2 * Math.PI * (t - start) / 10000;
+		
+		          // Sample the sine function
+		          for (i = 0; i < 4 * Math.PI; i += 0.2) {
+		            data.push([i, Math.sin(i - offset)]);
+		          }
+		
+		          // Draw Graph
+		          graph = Flotr.draw(container, [ data ], {
+		            yaxis : {
+		              max : 2,
+		              min : -2
+		            }
+		          });
+		
+		          // Animate
+		          setTimeout(function () {
+		        	if (runAnimation) {
+		              animate((new Date).getTime());
+		        	}
+		          }, 50);
+		        }
+		        animate(start);
+		      };
+		</script>
+	</head>
+	<body>
+		<!-- JQT first page-->
+		<div id="home">
+			<div class="toolbar">
+				<h1>Flotr2 Test</h1>
+			</div>
+			<ul class="rounded">
+				<li class="arrow">
+					<a onclick="goPage('page1')">Show Graph One</a>
+				</li>
+				<li class="arrow">
+					<a onclick="goPage('page2')">Show Graph Two</a>
+				</li>
+			</ul>
+			<div id="graph2"></div>
+		</div>
+
+		<!-- JQT first graph -->
+		<div id="page1">
+			<div class="toolbar">
+				<h1>Graph One</h1>
+				<a class="button back" onclick="goBack()">Back</a>
+			</div>
+			<div id="page1_graph" class="graph"></div>
+		</div>
+		
+		<!-- JQT second graph -->
+		<div id="page2">
+			<div class="toolbar">
+				<h1>Graph Two</h1>
+				<a class="button back" onclick="goBack()">Back</a>
+			</div>
+			<div id="page2_graph" class="graph"></div>
+		</div>
+	</body>
+</html>
