@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta name="viewport" content="width=320; user-scalable=no">
+		<meta http-equiv="Content-type" content="text/html; charset=utf-8">
+		<style type="text/css">
+		body {
+			margin: 0px;
+			padding: 0px;
+		}
+		#container {
+			width : 600px;
+			height: 384px;
+			margin: 8px auto;
+		}
+		</style>
+		<script type="text/javascript" charset="utf-8" src="js/wormhole.js"></script>
+    	<script type="text/javascript" src="flotr2.min.js"></script>
+    
+		<script type="text/javascript">
+			function displayDeviceInfo()
+			{
+				// Does nothing right now.
+				
+				// An alternative to placing the Flotr JavScript code
+				// in the body tag efter the container div, could be
+				// to put that code here. By now the DOM should have
+				// been loaded and teh container div should exist.
+			}
+
+			// Register event listeners.
+
+			// The "deviceready" event is sent when the system
+			// has finished loading.
+			document.addEventListener(
+				"deviceready",
+				displayDeviceInfo,
+				true);
+
+			// Close the application when the back key is pressed.
+			document.addEventListener(
+				"backbutton",
+				function() { mosync.app.exit(); },
+				true);
+		</script>
+	</head>
+	<body>
+		<div id="container"></div>
+	    <script type="text/javascript">
+	      (function () {
+	
+	        var
+	          container = document.getElementById('container'),
+	          start = (new Date).getTime(),
+	          data, graph, offset, i;
+	
+	        // Draw a sine curve at time t
+	        function animate (t) {
+	
+	          data = [];
+	          offset = 2 * Math.PI * (t - start) / 10000;
+	
+	          // Sample the sine function
+	          for (i = 0; i < 4 * Math.PI; i += 0.2) {
+	            data.push([i, Math.sin(i - offset)]);
+	          }
+	
+	          // Draw Graph
+	          graph = Flotr.draw(container, [ data ], {
+	            yaxis : {
+	              max : 2,
+	              min : -2
+	            }
+	          });
+	
+	          // Animate
+	          setTimeout(function () {
+	            animate((new Date).getTime());
+	          }, 50);
+	        }
+	
+	        animate(start);
+	      })();
+	    </script>
+	</body>
+</html>
