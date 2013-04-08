@@ -143,14 +143,7 @@ public:
 
 		// Create the image widget used to display snapshots
 		// (it will be added to the layout dynamically).
-		MAExtent screenSize = maGetScrSize();
 		mImageWidget = new Image();
-		mImageWidget->setTopPosition(50);
-		mImageWidget->setLeftPosition(50);
-		mImageWidget->setWidth(EXTENT_X(screenSize) - 100);
-		mImageWidget->setHeight(EXTENT_Y(screenSize) - 150);
-		mImageWidget->setBackgroundColor(0x770000);
-		mImageWidget->setAlpha(1.0);
 	}
 
 	Widget* getTopWidget()
@@ -187,6 +180,15 @@ public:
 				releaseImage();
 				return;
 			}
+
+			// Position and size image widget.
+			MAExtent screenSize = maGetScrSize();
+			mImageWidget->setTopPosition(50);
+			mImageWidget->setLeftPosition(50);
+			mImageWidget->setWidth(EXTENT_X(screenSize) - 100);
+			mImageWidget->setHeight(EXTENT_Y(screenSize) - 150);
+			mImageWidget->setBackgroundColor(0x770000);
+			mImageWidget->setAlpha(1.0);
 
 			// Show the image in the image widget.
 			mImageWidget->setImage(mImageHandle);
@@ -244,9 +246,23 @@ public:
 	 */
 	SimpleCameraMoblet()
 	{
+		setScreenOrientation();
 		createFocusListener();
 		createUI();
 		startCameraPreview();
+	}
+
+	void setScreenOrientation()
+	{
+		// Android and Windows Phone.
+		maScreenSetOrientation(SCREEN_ORIENTATION_DYNAMIC);
+
+		// iOS and Windows Phone.
+		maScreenSetSupportedOrientations(
+			MA_SCREEN_ORIENTATION_LANDSCAPE_LEFT |
+			MA_SCREEN_ORIENTATION_LANDSCAPE_RIGHT |
+			MA_SCREEN_ORIENTATION_PORTRAIT |
+			MA_SCREEN_ORIENTATION_PORTRAIT_UPSIDE_DOWN);
 	}
 
 	void createFocusListener()
