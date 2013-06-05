@@ -78,7 +78,7 @@ Sample test cases (see file TestRunnerSimple/MyTests.cpp):
     }
 
 Running tests (see file TestRunnerSimple/main.cpp):
-
+    
     // Declare entry point for running tests.
     void RunAllTests();
 
