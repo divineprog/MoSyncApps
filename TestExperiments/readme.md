@@ -24,14 +24,14 @@ Sample test cases (see file TestRunner/MyTests.cpp):
     Test __MyFirstTest(MyFirstTest, "MyFirstTest");
 
     // Test defined with macros.
-    TestCase(MySecondTest)
+    TestCaseBegin(MySecondTest)
     {
         ShouldHold(1==1);
     }
     TestCaseEnd(MySecondTest)
 
     // Test defined with macros.
-    TestCase(MyFailingTest)
+    TestCaseBegin(MyFailingTest)
     {
         ShouldHold(1==2);
     }
