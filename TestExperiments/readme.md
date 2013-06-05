@@ -82,6 +82,6 @@ Running tests (see file TestRunnerSimple/main.cpp):
     // Declare entry point for running tests.
     void RunAllTests();
 
-		// Run tests and report the final result.
-		RunAllTests();
-		TestRunner::mInstance->reportResult();
+    // Run tests and report the final result.
+    RunAllTests();
+    TestRunner::mInstance->reportResult();
