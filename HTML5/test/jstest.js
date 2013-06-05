@@ -1,11 +1,13 @@
-// ****** Buster Library ******
+// ****** mosync.test Library ******
 
-buster = {};
-buster.testCases = {};
-buster.numberOfTestCases = 0;
-buster.numberOfDoneTestCases = 0;
-buster.numberOfFails = 0;
+if (typeof mosync === "undefined") { mosync = {}; }
+mosync.test = {};
+mosync.test.testCases = {};
+mosync.test.numberOfTestCases = 0;
+mosync.test.numberOfDoneTestCases = 0;
+mosync.test.numberOfFails = 0;
 
+// mosync.rlog = console.log;
 /*mosync.rlog = function(m)
 {
 	document.body.innerHTML =
@@ -13,25 +15,17 @@ buster.numberOfFails = 0;
 		document.body.innerHTML;
 };*/
 
-buster.runAllTestCases = function()
+mosync.test.runAllTestCases = function()
 {
-    for (var key in this.testCases) 
+    var me = this;
+    for (var key in me.testCases) 
     {
-        var test = this.testCases[key];
+        var test = me.testCases[key];
         test.fun(test);
     }
 };
 
-buster.testCase = function (name, fun)
-{
-    this.testCases[name] = 
-    { 
-        "name": name
-        };
-    this.numberOfTestCases ++;
-};
-
-buster.testCase = function (name, fun)
+mosync.test.testCase = function (name, fun)
 {
     var me = this;
     this.testCases[name] = 
@@ -64,7 +58,7 @@ buster.testCase = function (name, fun)
 
 // ****** Test Cases ******
 
-buster.testCase("TimerTest", function(test)
+mosync.test.testCase("TimerTest", function(test)
 {
     var time = Date.now();
     var delay = 2000;
@@ -76,7 +70,7 @@ buster.testCase("TimerTest", function(test)
     delay);
 });
 
-buster.testCase("NativeUITest", function(test)
+mosync.test.testCase("NativeUITest", function(test)
 {
     function createScreen()
     {
@@ -117,10 +111,10 @@ buster.testCase("NativeUITest", function(test)
     createScreen();
 });
 
-buster.testCase("FailingTest", function(test)
+mosync.test.testCase("FailingTest", function(test)
 {
     test.shouldHold(false, 'FailingTest1');
     test.done();
 });
 
-buster.runAllTestCases();
+mosync.test.runAllTestCases();
