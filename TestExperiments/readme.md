@@ -39,9 +39,9 @@ Sample test cases (see file TestRunner/MyTests.cpp):
     
 Running tests (see file TestRunner/main.cpp):
 
-		// Run tests and report the final result.
-		TestRunner::mInstance->runAllTests();
-		TestRunner::mInstance->reportResult();
+    // Run tests and report the final result.
+    TestRunner::mInstance->runAllTests();
+    TestRunner::mInstance->reportResult();
 
 ## Code example for TestRunnerSimple
 
