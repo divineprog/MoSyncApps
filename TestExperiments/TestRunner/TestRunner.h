@@ -57,7 +57,7 @@ public:
 
 // Macros to make writing tests easier.
 
-#define TestCase(fun) \
+#define TestCaseBegin(fun) \
 	void fun(Test* __test)
 
 #define TestCaseEnd(fun) \
