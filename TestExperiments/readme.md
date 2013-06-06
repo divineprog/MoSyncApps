@@ -8,6 +8,10 @@ This folder contains two projects:
 
 * TestRunnerSimple - Uses plain functions for tests, which are manually added to a main test runner function which in turn is called from main.cpp. This approach is "simpler" because the test framework is smaller.
 
+Both examples use function pointers for test cases. Another option is to make test cases classes. This provides  additional capabilities in that classes can hold many objects, maintain state, implement listeners, etc. MATest uses this approach.
+
+For short test cases, functions are convinient, for more complext test cases, classes are propably a better option. The question is which kinds of tests will be most common? I guess a function can also just use a class to create an object for the test logic, so functions doe not exclude the use of classes.
+
 Both examples currently have a problem, you cannot plug in a sublcass of TestRunner and instantiate it without editing the code in TestRunner.cpp. This can be fixed by adding another pluggable class, that is called for methods like registerTestResult, and reportResult. This would be very useful as it can be used to configure where tests results should be reported: on the display, saved in a file, or sent over the network.
 
 There is also no support for asynchronous tests, and this should be added (see discussion below).
