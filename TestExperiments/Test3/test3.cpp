@@ -9,29 +9,25 @@
 #include <stdio.h>
 #include <vector>
 
-#define TESTCASE(fun) registerTestCase(this, (TestCaseFun)&fun, #fun)
-#define ASSERT(cond) assert(#cond, cond)
-#define EXPECT(name) expect(name)
-#define TEST(testClass) testClass __testClass; __ ## testClass .setTestName(#testClass)
+#define DEF_TEST(fun) registerTestCase((TestCaseFun)&fun, #fun)
+#define DET_TESTSUITE(testSuiteClass) testSuiteClass __testSuiteClass;
 
 /*
- Terminology:
+ Terminology/hierarchy:
 
  TestRunner
    has one TestLogic
-   has many Test
-
-   TestSuite
-     Test
-       TestCase
-         Expect/Assert
+   has many TestSuite
+     has many Test
+       has many Expect/Assert
 */
 
 
 // ********** Class TestRunner **********
 
-class Test;
 class TestLogic;
+class TestSuite;
+class TestCase;
 
 class TestRunner
 {
@@ -39,8 +35,8 @@ public:
     // Single instance of TestRunner.
     static TestRunner* mInstance;
     
-    // Vector that holds Test objects.
-    std::vector<Test*> mTests;
+    // Vector that holds TestSuite objects.
+    std::vector<TestSuite*> mTestSuites;
     
     // Pluggable object that defines central test logic:
     // assert/expect, log and report test results.
@@ -48,7 +44,7 @@ public:
     
     TestRunner();
     
-    void addTest(Test* test);
+    void addTestSuite(TestSuite* suite);
     
     void setTestLogic(TestLogic* testLogic);
 };
@@ -62,39 +58,44 @@ public:
     
     TestLogic(TestRunner* testRunner);
     
-    virtual void runAllTests();
+    virtual void runAllTestSuites();
     
-    virtual void assert(const char* testName, const char* assertName, bool cond);
+    virtual void assert(const char* testCaseName, const char* assertName, bool cond);
     
-    virtual void expect(const char* testName, const char* assertName);
+    virtual void expect(const char* testCaseName, const char* assertName);
 };
 
-// ********** Class Test **********
+// ********** Class TestSuite **********
 
-class Test
+typedef void (TestSuite::*TestCaseFun)(TestCase& testCase);
+    
+class TestSuite
 {
 public:
-    typedef void (Test::*TestCaseFun)(void);
+    // Vector that holds test cases.
+    std::vector<TestCase> mTestCases;
     
-    // Name of test.
-    const char* mTestName;
+    TestSuite();
     
-    // Vector that holds test case functions.
-    std::vector<TestCaseFun> mTestCaseFuns;
-    
-    Test(const char* testName);
-    
-    virtual void setTestName(const char* testName);
-    
-    virtual void registerTestCases() {}
-    
-    virtual void registerTestCase(Test* test, TestCaseFun fun, const char* testCaseName);
+    virtual void registerTestCase(TestCaseFun fun, const char* testCaseName);
     
     virtual void runAllTestCases();
+};
+
+// ********** Class TestCase **********
+
+class TestCase
+{
+public:
+
+    TestCaseFun mTestCaseFun;
+    const char* mTestCaseName;
     
-    virtual void assert(const char* assertName, bool cond);
-    
-    virtual void expect(const char* assertName);
+    TestCase(TestCaseFun fun, const char* name);
+
+    void assert(const char* assertName, bool cond);
+
+    void expect(const char* assertName);
 };
 
 #endif // __TESTRUNNER_H
@@ -107,9 +108,9 @@ TestRunner::TestRunner()
 {
 }
 
-void TestRunner::addTest(Test* test)
+void TestRunner::addTestSuite(TestSuite* suite)
 {
-    mTests.push_back(test);
+    mTestSuites.push_back(suite);
 }
 
 void TestRunner::setTestLogic(TestLogic* testLogic)
@@ -126,12 +127,12 @@ TestLogic::TestLogic(TestRunner* testRunner)
     mTestRunner = testRunner;
 }
 
-void TestLogic::runAllTests()
+void TestLogic::runAllTestSuites()
 {
-    for (int i = 0; i < mTestRunner->mTests.size(); ++i)
+    for (int i = 0; i < mTestRunner->mTestSuites.size(); ++i)
     {
-        Test* test = mTestRunner->mTests[i];
-        test->runAllTestCases();
+        TestSuite* suite = mTestRunner->mTestSuites[i];
+        suite->runAllTestCases();
     }
 }
 
@@ -145,66 +146,66 @@ void TestLogic::expect(const char* testName, const char* assertName)
     printf("%s expect: %s\n", testName, assertName);
 }
 
-// ********** Class Test **********
+// ********** Class TestSuite **********
 
-Test::Test(const char* testName)
+TestSuite::TestSuite()
 {
-    printf("Hello Test\n");
-    mTestName = testName;
+    TestRunner::mInstance->addTestSuite(this);
 }
 
-void Test::setTestName(const char* testName)
+void TestSuite::registerTestCase(TestCaseFun fun, const char* name)
 {
-    mTestName = testName;
+    mTestCases.push_back(TestCase(fun, name));
 }
 
-void Test::registerTestCase(Test* test, TestCaseFun fun, const char* testCaseName)
+void TestSuite::runAllTestCases()
 {
-    printf("regTestCase %s\n", testCaseName);
-    //(test->*fun)();
-    mTestCaseFuns.push_back(fun);
-}
-
-void Test::runAllTestCases()
-{
-    for (int i = 0; i < mTestCaseFuns.size(); ++i)
+    for (int i = 0; i < mTestCases.size(); ++i)
     {
-        TestCaseFun testCaseFun = mTestCaseFuns[i];
-        (this->*testCaseFun)();
+        TestCase testCase = mTestCases[i];
+        TestCaseFun fun = testCase.mTestCaseFun;
+        (this->*fun)(testCase);
     }
 }
-
-void Test::assert(const char* assertName, bool cond)
-{
-    TestRunner::mInstance->mTestLogic->assert(mTestName, assertName, cond);
-}
-
-void Test::expect(const char* assertName)
-{
-    TestRunner::mInstance->mTestLogic->expect(mTestName, assertName);
-}
     
-// ********************************
-// ********** MyTest.cpp **********
-// ********************************
+// ********** Class TestCase **********
 
-class MyTest : public Test
+TestCase::TestCase(TestCaseFun fun, const char* name)
+{
+    mTestCaseFun = fun;
+    mTestCaseName = name;
+}
+
+void TestCase::assert(const char* assertName, bool cond)
+{
+    TestRunner::mInstance->mTestLogic->assert(mTestCaseName, assertName, cond);
+}
+
+void TestCase::expect(const char* assertName)
+{
+    TestRunner::mInstance->mTestLogic->expect(mTestCaseName, assertName);
+}
+
+// *************************************
+// ********** MyTestSuite.cpp **********
+// *************************************
+
+class MyTestSuite : public TestSuite
 {
 public:
-    MyTest(const char* testName) : Test(testName)
+    MyTestSuite()
     {
-        printf("Hello MyTest\n");
-        //registerTestCase(this, (TestCaseFun)&MyTest::sendToBg, "MyTest::sendToBg");
-        TESTCASE(MyTest::sendToBg);
+        //registerTestCase((TestFun)&MyTestSuite::sendToBg, "MyTestSuite::sendToBg");
+        DEF_TEST(MyTestSuite::sendToBg);
     }
     
-    void sendToBg()
+    void sendToBg(TestCase& t)
     {
-        printf("sendToBg\n");
+        t.assert("Assert1", 1==1);
     }
 };
-//TEST(MyTest);
-MyTest __MyTest("MyTest");
+//DEF_TESTSUITE(MyTestSuite);
+MyTestSuite __MyTestSuite;
 
 
 // ******************************
@@ -217,5 +218,5 @@ int main()
     
     TestLogic* testLogic = new TestLogic(TestRunner::mInstance);
     (TestRunner::mInstance)->setTestLogic(testLogic);
-    (TestRunner::mInstance)->mTestLogic->runAllTests();
+    (TestRunner::mInstance)->mTestLogic->runAllTestSuites();
 }
