@@ -40,11 +40,6 @@ public:
 	}
 };
 
-#define TESTCASE(testCaseClass) \
-	static MATest::TestCase* sTestCase = \
-		new testCaseClass(#testCaseClass); \
-	static RegisterTestCase __testCaseClass(sTestCase);
-
 TESTCASE(TestSimpleAsserts)
 
 // Expands to:
