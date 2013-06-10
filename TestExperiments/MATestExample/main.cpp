@@ -5,10 +5,6 @@
 
 using namespace MAUtil;
 
-// Declare entry point for running tests.
-// Add more functions here as needed.
-void RunAllTests();
-
 class MyMoblet : public Moblet
 {
 public:
