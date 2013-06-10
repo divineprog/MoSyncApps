@@ -2,17 +2,28 @@
 
 ## Overview
 
-This folder contains two projects:
+This repository contains three MoSync projects. Note that *MATestExample* is the most recent example.
 
-* TestRunner - Uses function pointers and helper classes to register tests. Tests are registered where they are defined in the source code. This is done by creating a class that adds a function pointer to the list of tests. The test runner is called in main.cpp.
+* TestRunner - Uses function pointers and helper classes to register tests. Tests are registered where they are defined in the source code. This is done by creating a class that adds a function pointer to the list of tests. The test runner is called in main.cpp. NOTE: This code relies on static initialisation order which is not safe!
 
-* TestRunnerSimple - Uses plain functions for tests, which are manually added to a main test runner function which in turn is called from main.cpp. This approach is "simpler" because the test framework is smaller.
+* TestRunnerSimple - Uses plain functions for tests, which are manually added to a main test runner function which in turn is called from main.cpp. This approach is "simpler" because the test framework is smaller. NOTE: This code relies on static initialisation order which is not safe!
 
-Both examples use function pointers for test cases. Another option is to make test cases classes. This provides  additional capabilities in that classes can hold many objects, maintain state, implement listeners, etc. MATest uses this approach.
+* MATestExample - This example uses the existing MATest framework. What is added is a class TestRunner (with a different implementation compared to the other examples), which simplifies registering and running tests a bit. It also includes a sample TestListener (SimpleTestListener) that prints the test result to the screen. This could be modified to log results on file or send over the network. There is support for Expect and for timeout of tests that take too long to run.
+NOTE: This code handles static initialisation in a safe way.
+
+The two first examples use function pointers for test cases. 
+
+Another option is to make test cases classes. This provides  additional capabilities in that classes can hold many objects, maintain state, implement listeners, etc. MATest uses this approach, and this is used by MATestExample.
 
 For short test cases, functions are convinient, for more complext test cases, classes are propably a better option. The question is which kinds of tests will be most common? I guess a function can also just use a class to create an object for the test logic, so functions doe not exclude the use of classes.
 
-Both examples currently have a problem, you cannot plug in a sublcass of TestRunner and instantiate it without editing the code in TestRunner.cpp. This can be fixed by adding another pluggable class, that is called for methods like registerTestResult, and reportResult. This would be very useful as it can be used to configure where tests results should be reported: on the display, saved in a file, or sent over the network.
+For an updated list of requirements, see this MoSync Jira story: http://jira.mosync.com/browse/MOSYNC-2987
+
+<!--
+
+Text below refers to the first two examples, which are kind of ouydated now.
+
+All examples currently have a problem, you cannot plug in a sublcass of TestRunner and instantiate it without editing the code in TestRunner.cpp. This can be fixed by adding another pluggable class, that is called for methods like registerTestResult, and reportResult. This would be very useful as it can be used to configure where tests results should be reported: on the display, saved in a file, or sent over the network. For MATest this does however work out-of-the-box, because the of the pluggable TestListener.
 
 There is also no support for asynchronous tests, and this should be added (see discussion below).
 
@@ -212,3 +223,5 @@ Example of interface:
     };
 
 What I do like about MATest is that there are no macros, and no global objects (singletons). This makes for a clean code structure with few assumptions.
+
+-->
