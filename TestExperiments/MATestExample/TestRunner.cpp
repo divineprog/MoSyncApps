@@ -17,7 +17,7 @@ TestRunner* TestRunner::getInstance()
 
 TestRunner::TestRunner() :
 	mSuite("TestRunner"),
-	mTimeout(20000)
+	mTimeout(5000)
 {
 }
 

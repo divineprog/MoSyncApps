@@ -174,8 +174,13 @@ namespace MATest
 					fireEndTestCase();
 				}
 
-				// Run current test case.
+				// Get the current test case.
 				TestCase* testCase = mTestCases[mCurrentTestCase];
+
+				// Increment test case index.
+				mCurrentTestCase ++;
+
+				// Open the current test case.
 				fireBeginTestCase(testCase->getName());
 				testCase->open();
 
@@ -195,9 +200,6 @@ namespace MATest
 				// Note: We do not call fireEndTestCase() here,
 				// because it should not be called until the
 				// current test case has called runNextTestCase().
-
-				// Move to next test case.
-				mCurrentTestCase ++;
 			}
 		}
 
