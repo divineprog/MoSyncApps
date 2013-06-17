@@ -1,6 +1,6 @@
 #include <ma.h>
 #include <MAUtil/Environment.h>
-#include "TestRunner.h"
+#include "../TestRunner.h"
 
 /**
  * This example does not work very well, so it

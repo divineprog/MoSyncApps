@@ -1,6 +1,6 @@
 #include <ma.h>
 #include <MAUtil/Downloader.h>
-#include "TestRunner.h"
+#include "../TestRunner.h"
 
 /**
  * Example of async test.

@@ -1,4 +1,4 @@
-#include "TestRunner.h"
+#include "../TestRunner.h"
 
 /**
  * This is just a very simple example of
@@ -19,7 +19,7 @@ public:
 		testSubtraction();
 		testFailure();
 
-		suite->runNextCase();
+		runNextTestCase();
 	}
 
 	void testAddition()

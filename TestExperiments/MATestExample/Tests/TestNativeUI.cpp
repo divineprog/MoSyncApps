@@ -3,7 +3,7 @@
 #include <MAUtil/Moblet.h>
 #include <NativeUI/Widgets.h>
 #include <NativeUI/WidgetUtil.h>
-#include "TestRunner.h"
+#include "../TestRunner.h"
 
 using namespace MATest;
 using namespace MAUtil;
