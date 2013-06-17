@@ -27,6 +27,7 @@ MA 02110-1301, USA.
 #include <ma.h>
 #include <MAUtil/Vector.h>
 #include <MAUtil/String.h>
+#include <MAUtil/Environment.h>
 
 namespace MATest
 {
@@ -176,7 +177,8 @@ namespace MATest
 	/**
 	* @brief A test suite holds a list of test cases.
 	*/
-	class TestSuite {
+	class TestSuite : public MAUtil::TimerListener
+	{
 	public:
 		/**
 		 * @brief Constructor.
@@ -197,6 +199,8 @@ namespace MATest
 		 * Run the next test case.
 		 */
 		virtual void runNextCase();
+		virtual void runNextCaseHelper();
+		virtual void runTimerEvent();
 
 		/**
 		 * Get the name of the suite.
@@ -260,14 +264,9 @@ namespace MATest
 		int mCurrentTestCase;
 
 		/**
-		 * Has method runNextCase been called?
+		 * Counter that tracks calls to runNextCase.
 		 */
-		bool mRunNextCaseCalled;
-
-		/**
-		 * Is the current test case running asynchronously?
-		 */
-		bool mIsRunningAsync;
+		int mRunCounter;
 	};
 
 } // namespace

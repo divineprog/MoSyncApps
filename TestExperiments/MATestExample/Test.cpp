@@ -96,8 +96,7 @@ namespace MATest
 	TestSuite::TestSuite(const String& name) :
 		mName(name),
 		mCurrentTestCase(0),
-		mRunNextCaseCalled(false),
-		mIsRunningAsync(true) // Must be true to start tests.
+		mRunCounter(0)
 	{
 	}
 
@@ -137,79 +136,80 @@ namespace MATest
 	// Note: This method is called from TestCase::runNextTestCase().
 	void TestSuite::runNextCase()
 	{
-		// This method has just been called.
-		mRunNextCaseCalled = true;
-
-		if (!mIsRunningAsync)
+		// If this the number of waiting test cases is zero
+		// we launch a timer to run the next test case.
+		if (0 == mRunCounter)
 		{
-			// If the current test case is not running
-			// asynchronously, we just return. The caller
-			// will proceed running in its while loop.
-			return;
-		}
-		else
-		{
-			// If running asynchronously, this makes the
-			// end of the test case, reset the flag and
-			// continue into the while loop below.
-			mIsRunningAsync = false;
+			MAUtil::Environment::getEnvironment().addTimer(this, 1, 1);
 		}
 
+		// Increment counter for test cases that wants to run.
+		mRunCounter ++;
+	}
+
+	void TestSuite::runTimerEvent()
+	{
+		// Remove the timer.
+		MAUtil::Environment::getEnvironment().removeTimer(this);
+
+		// Run next test case.
+		runNextCaseHelper();
+
+		// Decrement run counter.
+		mRunCounter --;
+
+		// If there are test cases that want to run, start a timer
+		// to run it/them (should likely be only one waiting).
+		if (mRunCounter > 0)
+		{
+			MAUtil::Environment::getEnvironment().addTimer(this, 1, 1);
+		}
+	}
+
+	void TestSuite::runNextCaseHelper()
+	{
 		// There must be test cases to run.
 		if (mTestCases.size() > 0)
 		{
-			while (mCurrentTestCase < mTestCases.size())
+			// Is this the first test case?
+			if (0 == mCurrentTestCase)
 			{
-				// Is this the first test case?
-				if (0 == mCurrentTestCase)
-				{
-					// Signal beginning of the test suite.
-					fireBeginTestSuite(mName);
-				}
-
-				// If this is not the first test case then
-				// signal the end of the previous test case.
-				if (mCurrentTestCase > 0)
-				{
-					fireEndTestCase();
-				}
-
-				// Get the current test case.
-				TestCase* testCase = mTestCases[mCurrentTestCase];
-
-				// Increment test case index.
-				mCurrentTestCase ++;
-
-				// Open the current test case.
-				fireBeginTestCase(testCase->getName());
-				testCase->open();
-
-				// Set flags and start test case.
-				mRunNextCaseCalled = false;
-				mIsRunningAsync = false;
-				testCase->start();
-				if (!mRunNextCaseCalled)
-				{
-					// The start method did not call runNextTestCase,
-					// this test now runs async. The while loop will
-					// be entered next time runNextTestCase is called.
-					mIsRunningAsync = true;
-					return;
-				}
-
-				// Note: We do not call fireEndTestCase() here,
-				// because it should not be called until the
-				// current test case has called runNextTestCase().
+				// Signal beginning of the test suite.
+				fireBeginTestSuite(mName);
 			}
-		}
 
-		// If last test case has been run, reset the
-		// test case index and end the suite.
-		if (mCurrentTestCase >= mTestCases.size())
-		{
-			mCurrentTestCase = 0;
-			mIsRunningAsync = true;
-			fireEndTestSuite();
+			// If last test case has been run, reset the
+			// test case index and end the suite.
+			if (mCurrentTestCase >= mTestCases.size())
+			{
+				mCurrentTestCase = 0;
+				fireEndTestSuite();
+				return;
+			}
+
+			// If this is not the first test case then
+			// signal the end of the previous test case.
+			if (mCurrentTestCase > 0)
+			{
+				fireEndTestCase();
+			}
+
+			// Get the current test case.
+			TestCase* testCase = mTestCases[mCurrentTestCase];
+
+			// Increment test case index.
+			mCurrentTestCase ++;
+
+			// Open the current test case.
+			fireBeginTestCase(testCase->getName());
+			testCase->open();
+
+			// Run current test case.
+			testCase->start();
+
+			// Note: We do not call fireEndTestCase() here,
+			// because it should not be called until the
+			// current test case has called runNextTestCase().
 		}
 	}
 

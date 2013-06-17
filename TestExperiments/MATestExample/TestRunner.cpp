@@ -37,9 +37,9 @@ void TestRunner::addTestListener(MATest::TestListener* listener)
 
 void TestRunner::runNextTestCase()
 {
-	MAUtil::Environment::getEnvironment().addTimer(this, mTimeout, 1);
+	//MAUtil::Environment::getEnvironment().addTimer(this, mTimeout, 1);
 	mSuite.runNextCase();
-	MAUtil::Environment::getEnvironment().removeTimer(this);
+	//MAUtil::Environment::getEnvironment().removeTimer(this);
 }
 
 void TestRunner::setTimeout(int ms)
