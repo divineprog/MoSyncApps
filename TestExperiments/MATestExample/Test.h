@@ -31,6 +31,10 @@ MA 02110-1301, USA.
 
 namespace MATest
 {
+	// Forward declarations.
+	class TestSuite;
+	class TestCase;
+
 	/**
 	* @brief Listener for events triggered when running tests.
 	*/
@@ -48,22 +52,22 @@ namespace MATest
 		virtual ~TestListener();
 
 		/**
-		 * @brief Called when starting a test suite.
+		 * @brief Called before start of a test suite.
 		 */
 		virtual void beginTestSuite(const MAUtil::String& suiteName);
 
 		/**
-		 * @brief Called when ending a test suite.
+		 * @brief Called after end of a test suite.
 		 */
 		virtual void endTestSuite();
 
 		/**
-		 * @brief Called when starting a test case.
+		 * @brief Called before start of a test case.
 		 */
 		virtual void beginTestCase(const MAUtil::String& testCaseName);
 
 		/**
-		 * @brief Called when ending a test case.
+		 * @brief Called after end of a test case.
 		 */
 		virtual void endTestCase();
 
@@ -78,10 +82,45 @@ namespace MATest
 		 * expected to happen in the future".
 		 */
 		virtual void expectation(const MAUtil::String& assertName);
+
+		/**
+		 * @brief Called when a test case times out.
+		 */
+		virtual void timedout(const MAUtil::String& testCaseName);
 	};
 
-	// Forward declaration.
-	class TestSuite;
+	/**
+	* @brief Class that handles timeout of test cases.
+	*/
+	class TestCaseTimeOutListener : public MAUtil::TimerListener
+	{
+	public:
+
+		/**
+		 * @brief Set the test case of this listener.
+		 */
+		void setTestCase(TestCase* testCase);
+
+		/**
+		 * @brief Start the timer with the given the timeout value.
+		 */
+		void startTimer(int ms);
+
+		/**
+		 * @brief Stop timeout timer.
+		 */
+		void stopTimer();
+
+		/**
+		 * @brief Called on test case timeout.
+		 */
+		virtual void runTimerEvent();
+
+		/**
+		 * @brief The test case of this listener.
+		 */
+		TestCase* mTestCase;
+	};
 
 	/**
 	* @brief Base class for test cases.
@@ -107,6 +146,17 @@ namespace MATest
 		virtual ~TestCase();
 
 		/**
+		 * @brief Set the timeout for the test case.
+		 * Starts the timeout timer with this delay.
+		 */
+		virtual void setTimeOut(int ms);
+
+		/**
+		 * @brief Stop the timeout timer.
+		 */
+		virtual void clearTimeOut();
+
+		/**
 		 * @brief Called before a test case is run.
 		 * Do initialisation here as needed.
 		 */
@@ -126,7 +176,7 @@ namespace MATest
 		virtual void start() = 0;
 
 		/**
-		 * @brief Test a condition that should hold.
+		 * @brief State a condition that should hold.
 		 */
 		virtual bool assert(const MAUtil::String& assertionName, bool success);
 
@@ -135,6 +185,12 @@ namespace MATest
 		 * in the future.
 		 */
 		virtual void expect(const MAUtil::String& assertionName);
+
+		/**
+		 * @brief State that this test case has timed out.
+		 * Stops running the test case.
+		 */
+		virtual void timeOut();
 
 		/**
 		 * @brief Call to run the next test case. This must
@@ -146,7 +202,7 @@ namespace MATest
 		/**
 		 * @brief Get the name of this test case.
 		 */
-		virtual const MAUtil::String& getName() const;
+		virtual MAUtil::String getName() const;
 
 		/**
 		 * @brief Get the test suite this test case belongs to.
@@ -164,14 +220,21 @@ namespace MATest
 		/**
 		 * @brief @deprecated Do not access this variable in your code!
 		 * Use getSuite() instead.
+		 * TODO: Rename to mSuite.
 		 */
 		TestSuite* suite;
 
 		/**
 		 * @brief @deprecated Do not access this variable in your code!
 		 * Use getName() instead.
+		 * TODO: Rename to mName.
 		 */
 		MAUtil::String name;
+
+		/**
+		 * @brief TimerListener for test timeout.
+		 */
+		TestCaseTimeOutListener mTimeOutListener;
 	};
 
 	/**
@@ -191,65 +254,75 @@ namespace MATest
 		virtual ~TestSuite();
 
 		/**
-		 * Add a test case to the suite.
+		 * @brief Add a test case to the suite.
 		 */
 		virtual void addTestCase(TestCase* testCase);
 
 		/**
-		 * Run the next test case.
+		 * @brief Set the default timeout for test cases.
+		 */
+		virtual void setTestCaseDefaultTimeout(int ms);
+
+		/**
+		 * @brief Run the next test case.
 		 */
 		virtual void runNextCase();
 		virtual void runNextCaseHelper();
 		virtual void runTimerEvent();
 
 		/**
-		 * Get the name of the suite.
+		 * @brief Get the name of the suite.
 		 */
 		virtual const MAUtil::String& getName() const;
 
 		/**
-		 * Add listener that will be notified of test results.
+		 * @brief Add listener that will be notified of test results.
 		 */
 		virtual void addTestListener(TestListener* testListener);
 
 		/**
-		 * Send test suite begin to listeners.
+		 * @brief Send test suite begin event to listeners.
 		 */
 		virtual void fireBeginTestSuite(const MAUtil::String& suiteName);
 
 		/**
-		 * Send test suite end to listeners.
+		 * @brief Send test suite end event to listeners.
 		 */
 		virtual void fireEndTestSuite();
 
 		/**
-		 * Send test case begin to listeners.
+		 * @brief Send test case begin event to listeners.
 		 */
 		virtual void fireBeginTestCase(const MAUtil::String& testCaseName);
 
 		/**
-		 * Send test case end to listeners.
+		 * @brief Send test case end event to listeners.
 		 */
 		virtual void fireEndTestCase();
 
 		/**
-		 * Send assertion to listeners.
+		 * @brief Send assertion event to listeners.
 		 */
 		virtual void fireAssertion(const MAUtil::String& assertionName, bool success);
 
 		/**
-		 * Send expectation to listeners.
+		 * @brief Send expectation event to listeners.
 		 */
 		virtual void fireExpectation(const MAUtil::String& assertionName);
 
+		/**
+		 * @brief Send timed out event to listeners.
+		 */
+		virtual void fireTimedOut(const MAUtil::String& assertionName);
+
 	protected:
 		/**
-		 * Name of test suite.
+		 * @brief Name of test suite.
 		 */
 		MAUtil::String mName;
 
 		/**
-		 * List of test cases.
+		 * @brief List of test cases.
 		 */
 		MAUtil::Vector<TestCase*> mTestCases;
 
@@ -259,14 +332,19 @@ namespace MATest
 		MAUtil::Vector<TestListener*> mTestListeners;
 
 		/**
-		 * Index that point sto the current test case.
+		 * @brief Index that point sto the current test case.
 		 */
 		int mCurrentTestCase;
 
 		/**
-		 * Counter that tracks calls to runNextCase.
+		 * @brief Counter that tracks calls to runNextCase.
 		 */
 		int mRunCounter;
+
+		/**
+		 * @brief Default value for test case timeout.
+		 */
+		int mTestCaseDefaultTimeOut;
 	};
 
 } // namespace

@@ -40,16 +40,54 @@ namespace MATest
 	void TestListener::endTestCase() {}
 	void TestListener::assertion(const String& assertionName, bool cond) {}
 	void TestListener::expectation(const String& assertionName) {}
+	void TestListener::timedout(const String& testCaseName) {}
+
+
+	/* ========== Class TestCaseTimeOutListener ========== */
+
+	void TestCaseTimeOutListener::setTestCase(TestCase* testCase)
+	{
+		mTestCase = testCase;
+	}
+
+	void TestCaseTimeOutListener::startTimer(int ms)
+	{
+		stopTimer();
+		MAUtil::Environment::getEnvironment().addTimer(this, ms, 1);
+	}
+
+	void TestCaseTimeOutListener::stopTimer()
+	{
+		MAUtil::Environment::getEnvironment().removeTimer(this);
+	}
+
+	void TestCaseTimeOutListener::runTimerEvent()
+	{
+		// The test case has timed out.
+		stopTimer();
+		testCase->timeOut();
+	}
 
 	/* ========== Class TestCase ========== */
 
 	TestCase::TestCase(const String& name) :
 		name(name)
 	{
+		mTimeOutListener.setTestCase(this);
 	}
 
 	TestCase::~TestCase()
 	{
+	}
+
+	void TestCase::setTimeOut(int ms)
+	{
+		mTimeOutListener.startTimer(ms);
+	}
+
+	void TestCase::clearTimeOut()
+	{
+		mTimeOutListener.stopTimer();
 	}
 
 	void TestCase::open()
@@ -71,7 +109,13 @@ namespace MATest
 		suite->fireExpectation(assertionName);
 	}
 
-	const String& TestCase::getName() const
+	void TestCase::timeOut()
+	{
+		suite->fireTimedOut(name);
+		runNextTestCase();
+	}
+
+	String TestCase::getName() const
 	{
 		return name;
 	}
@@ -96,7 +140,8 @@ namespace MATest
 	TestSuite::TestSuite(const String& name) :
 		mName(name),
 		mCurrentTestCase(0),
-		mRunCounter(0)
+		mRunCounter(0),
+		mTestCaseDefaultTimeOut(20000) // 20 seconds
 	{
 	}
 
@@ -110,7 +155,13 @@ namespace MATest
 		testCase->setSuite(this);
 	}
 
+	void TestSuite::setTestCaseDefaultTimeout(int ms)
+	{
+		mTestCaseDefaultTimeOut = ms;
+	}
+
 // TODO: Why is this commented out?
+// This code seems to run all test cases sequentially.
 #if 0
 	void TestSuite::runTestCases() {
 		for(int j = 0; j < mTestListeners.size(); j++) {
@@ -143,7 +194,7 @@ namespace MATest
 			MAUtil::Environment::getEnvironment().addTimer(this, 1, 1);
 		}
 
-		// Increment counter for test cases that wants to run.
+		// Increment counter for test cases to run.
 		mRunCounter ++;
 	}
 
@@ -158,7 +209,7 @@ namespace MATest
 		// Decrement run counter.
 		mRunCounter --;
 
-		// If there are test cases that want to run, start a timer
+		// If there are test cases left to run, start a timer
 		// to run it/them (should likely be only one waiting).
 		if (mRunCounter > 0)
 		{
@@ -168,6 +219,8 @@ namespace MATest
 
 	void TestSuite::runNextCaseHelper()
 	{
+		TestCase* testCase;
+
 		// There must be test cases to run.
 		if (mTestCases.size() > 0)
 		{
@@ -191,11 +244,15 @@ namespace MATest
 			// signal the end of the previous test case.
 			if (mCurrentTestCase > 0)
 			{
+				// Close/clear the current test case.
+				testCase = mTestCases[mCurrentTestCase];
+				testCase->clearTimeOut();
+				testCase->close();
 				fireEndTestCase();
 			}
 
 			// Get the current test case.
-			TestCase* testCase = mTestCases[mCurrentTestCase];
+			testCase = mTestCases[mCurrentTestCase];
 
 			// Increment test case index.
 			mCurrentTestCase ++;
@@ -205,6 +262,7 @@ namespace MATest
 			testCase->open();
 
 			// Run current test case.
+			testCase->setTimeOut(mTestCaseDefaultTimeOut);
 			testCase->start();
 
 			// Note: We do not call fireEndTestCase() here,

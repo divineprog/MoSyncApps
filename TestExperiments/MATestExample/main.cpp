@@ -4,6 +4,7 @@
 #include "TestRunner.h"
 
 using namespace MAUtil;
+using namespace MATest;
 
 class MyMoblet : public Moblet
 {
@@ -15,10 +16,10 @@ public:
 
 		// Set test listener that will report results.
 		TestRunner::getInstance()->addTestListener(
-			new SimpleTestListener());
+			new HighLevelTestListener());
 
 		// Run tests.
-		TestRunner::getInstance()->runNextTestCase();
+		TestRunner::getInstance()->runTests();
 	}
 
 	void keyPressEvent(int keyCode, int nativeCode)

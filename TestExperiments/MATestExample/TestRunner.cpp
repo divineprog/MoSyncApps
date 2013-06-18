@@ -1,136 +1,227 @@
+/*
+Copyright (C) 2013 MoSync AB
+
+This program is free software; you can redistribute it and/or
+modify it under the terms of the GNU General Public License,
+version 2, as published by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program; if not, write to the Free Software
+Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston,
+MA 02110-1301, USA.
+*/
+
+/*
+* @file TestRunner.cpp
+* @brief High-level wrapper for defining and running test suites.
+*/
+
 #include <conprint.h>
 #include "TestRunner.h"
 
-// ********** Class TestRunner **********
-
-TestRunner* TestRunner::sInstance;
-
-TestRunner* TestRunner::getInstance()
+namespace MATest
 {
-	if (NULL == TestRunner::sInstance)
+
+	// ********** Class TestRunner **********
+
+	TestRunner* TestRunner::sInstance;
+
+	TestRunner* TestRunner::getInstance()
 	{
-		TestRunner::sInstance = new TestRunner();
+		if (NULL == TestRunner::sInstance)
+		{
+			TestRunner::sInstance = new TestRunner();
+		}
+
+		return TestRunner::sInstance;
 	}
 
-	return TestRunner::sInstance;
-}
-
-TestRunner::TestRunner() :
-	mSuite("TestRunner"),
-	mTimeout(5000)
-{
-}
-
-TestRunner::~TestRunner()
-{
-}
-
-void TestRunner::addTestCase(MATest::TestCase* testCase)
-{
-	mSuite.addTestCase(testCase);
-}
-
-void TestRunner::addTestListener(MATest::TestListener* listener)
-{
-	mSuite.addTestListener(listener);
-}
-
-void TestRunner::runNextTestCase()
-{
-	//MAUtil::Environment::getEnvironment().addTimer(this, mTimeout, 1);
-	mSuite.runNextCase();
-	//MAUtil::Environment::getEnvironment().removeTimer(this);
-}
-
-void TestRunner::setTimeout(int ms)
-{
-	mTimeout = ms;
-}
-
-void TestRunner::runTimerEvent()
-{
-	// Currently running test timed out,
-	// run next test.
-	runNextTestCase();
-}
-
-// ********** Class RegisterTestCase **********
-
-RegisterTestCase::RegisterTestCase(MATest::TestCase* testCase)
-{
-	TestRunner::getInstance()->addTestCase(testCase);
-};
-
-// ********** Class SimpleTestListener **********
-
-SimpleTestListener::SimpleTestListener()
-{
-	mPassedTests = 0;
-	mFailedTests = 0;
-}
-
-void SimpleTestListener::beginTestSuite(
-	const MAUtil::String& suiteName)
-{
-	printf("Started running tests\n");
-}
-
-void SimpleTestListener::endTestSuite()
-{
-	printf("Finished running tests\n");
-	printf("Tests passed: %i\n", mPassedTests);
-	printf("Tests failed: %i\n", mFailedTests);
-	printf("Expects failed: %i\n", (int)mExpectedAsserts.size());
-	if (mExpectedAsserts.size() > 0)
+	TestRunner::TestRunner() :
+		mSuite("TestRunner")
 	{
-		printf("Expected but did not happen:\n");
-		mExpectedAsserts.begin();
-		for (MAUtil::Set<MAUtil::String>::Iterator iter =
-				mExpectedAsserts.begin();
-			iter != mExpectedAsserts.end();
-			iter++)
+	}
+
+	TestRunner::~TestRunner()
+	{
+	}
+
+	void TestRunner::addTestCase(TestCase* testCase)
+	{
+		mSuite.addTestCase(testCase);
+	}
+
+	void TestRunner::addTestListener(TestListener* listener)
+	{
+		mSuite.addTestListener(listener);
+	}
+
+	void TestRunner::setTestCaseDefaultTimeout(int ms)
+	{
+		mSuite.setTestCaseDefaultTimeout(listener);
+	}
+
+	void TestRunner::runTests()
+	{
+		mSuite.runNextCase();
+	}
+
+	// ********** Class RegisterTestCase **********
+
+	RegisterTestCase::RegisterTestCase(TestCase* testCase)
+	{
+		TestRunner::getInstance()->addTestCase(testCase);
+	};
+
+	// ********** Class HighLevelTestListener **********
+
+	HighLevelTestListener::HighLevelTestListener()
+	{
+		reset();
+	}
+
+	void HighLevelTestListener::beginTestSuite(
+		const MAUtil::String& suiteName)
+	{
+	}
+
+	void HighLevelTestListener::reset()
+	{
+		mNumTestCasesRan = 0;
+		mNumAssertsPassed = 0;
+		mTestCasesTimedOut.clear();
+		mAssertsFailed.clear();
+		mAssertsExpected.clear();
+	}
+
+	int HighLevelTestListener::getNumberOfTestCasesRan()
+	{
+		return mNumTestCasesRan;
+	}
+
+	int HighLevelTestListener::getNumberOfTestCasesTimedOut()
+	{
+		return (int) mTestCasesTimedOut.size();
+	}
+
+	String HighLevelTestListener::getTestCaseTimedOut(int index)
+	{
+		return mTestCasesTimedOut[index];
+	}
+
+	int HighLevelTestListener::getNumberOfAssertsPassed()
+	{
+		return mNumAssertsPassed;
+	}
+
+	int HighLevelTestListener::getNumberOfAssertsFailed()
+	{
+		return (int) mAssertsFailed.size();
+	}
+
+	String HighLevelTestListener::getAssertFailed(int index)
+	{
+		return mAssertsFailed[index];
+	}
+
+	int HighLevelTestListener::getNumberOfAssertsExpected()
+	{
+		return (int) mAssertsExpected.size();
+	}
+
+	String HighLevelTestListener::getAssertExpected(int index)
+	{
+		return mAssertsExpected[index];
+	}
+
+	// Standard error reporting that prints to the MoSync screen.
+	// You can use this code as inspiration for your own listener class.
+	// Just inherit HighLevelTestListener and override this method.
+	void HighLevelTestListener::endTestSuite()
+	{
+		printf("Finished running tests\n");
+
+		// Test cases.
+		printf("Test cases ran: %i\n", getNumberOfTestCasesRan());
+		printf("Test cases timed out: %i\n", getNumberOfTestCasesTimedOut());
+		for (int i = 0; i < getNumberOfTestCasesTimedOut(); ++i)
 		{
-			printf("%s\n", (*iter).c_str());
+			printf("  %s\n", getTestCaseTimedOut[i].c_str());
+		}
+
+		// Asserts.
+		printf("Asserts passed: %i\n", getNumberOfAssertsPassed());
+		printf("Asserts failed: %i\n", getNumberOfAssertsFailed());
+		for (int i = 0; i < getNumberOfAssertsFailed(); ++i)
+		{
+			printf("  %s\n", getAssertFailed[i].c_str());
+		}
+
+		// Expected asserts.
+		printf("Expects failed: %i\n", getNumberOfAssertsExpected());
+		for (int i = 0; i < getNumberOfAssertsExpected(); ++i)
+		{
+			printf("  %s\n", getAssertExpected[i].c_str());
 		}
 	}
-}
 
-void SimpleTestListener::beginTestCase(
-	const MAUtil::String& testCaseName)
-{
-	mCurrentTestCaseName = testCaseName;
-}
-
-void SimpleTestListener::endTestCase()
-{
-	// Nothing done.
-}
-
-void SimpleTestListener::assertion(
-	const MAUtil::String& assertionName,
-	bool cond)
-{
-	if (!cond)
+	void HighLevelTestListener::beginTestCase(
+		const MAUtil::String& testCaseName)
 	{
-		mFailedTests++;
-		printf("FAIL %s: %s\n",
-			mCurrentTestCaseName.c_str(),
-			assertionName.c_str());
+		mCurrentTestCaseName = testCaseName;
 	}
-	else
-	{
-		mExpectedAsserts.erase(
-			mCurrentTestCaseName + ":" + assertionName);
-		mPassedTests++;
-	}
-}
 
-void SimpleTestListener::expect(
-	const MAUtil::String& assertionName)
-{
-	printf("EXPECT %s: %s\n",
-			mCurrentTestCaseName.c_str(),
-			assertionName.c_str());
-	mExpectedAsserts.insert(
-		mCurrentTestCaseName + ":" + assertionName);
-}
+	void HighLevelTestListener::endTestCase()
+	{
+		mNumTestCasesRan ++;
+	}
+
+	// Helper function for removing an entry from the expected list.
+	void eraseExpected(
+		MAUtil::Vector<MAUtil::String> v,
+		const MAUtil::String& s)
+	{
+		for (int i = 0; i < v.size(); ++i)
+		{
+			if (v[i] == s)
+			{
+				v.remove(i);
+				return;
+			}
+		}
+	}
+
+	void HighLevelTestListener::assertion(
+		const MAUtil::String& assertionName,
+		bool cond)
+	{
+		String s = mCurrentTestCaseName + ":" + assertionName;
+		if (!cond)
+		{
+			mAssertsFailed.add(s);
+		}
+		else
+		{
+			mNumAssertsPassed ++;
+			eraseExpected(mExpectedAsserts, s);
+		}
+	}
+
+	void HighLevelTestListener::expect(
+		const MAUtil::String& assertionName)
+	{
+		String s = mCurrentTestCaseName + ":" + assertionName;
+		mExpectedAsserts.add(s);
+	}
+
+	void HighLevelTestListener::timedOut(
+		const MAUtil::String& testCaseName)
+	{
+		mTestCasesTimedOut.add(testCaseName);
+	}
+
+} // namespace
