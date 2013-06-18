@@ -28,19 +28,17 @@ MA 02110-1301, USA.
 
 namespace MATest
 {
-	using namespace MAUtil;
-
 	/* ========== Class TestListener ========== */
 
 	TestListener::TestListener() {}
 	TestListener::~TestListener() {}
-	void TestListener::beginTestSuite(const String& suiteName) {}
+	void TestListener::beginTestSuite(const MAUtil::String& suiteName) {}
 	void TestListener::endTestSuite() {}
-	void TestListener::beginTestCase(const String& testCaseName) {}
+	void TestListener::beginTestCase(const MAUtil::String& testCaseName) {}
 	void TestListener::endTestCase() {}
-	void TestListener::assertion(const String& assertionName, bool cond) {}
-	void TestListener::expectation(const String& assertionName) {}
-	void TestListener::timedout(const String& testCaseName) {}
+	void TestListener::assertion(const MAUtil::String& assertionName, bool cond) {}
+	void TestListener::expectation(const MAUtil::String& assertionName) {}
+	void TestListener::timedOut(const MAUtil::String& testCaseName) {}
 
 
 	/* ========== Class TestCaseTimeOutListener ========== */
@@ -65,12 +63,12 @@ namespace MATest
 	{
 		// The test case has timed out.
 		stopTimer();
-		testCase->timeOut();
+		mTestCase->timeOut();
 	}
 
 	/* ========== Class TestCase ========== */
 
-	TestCase::TestCase(const String& name) :
+	TestCase::TestCase(const MAUtil::String& name) :
 		name(name)
 	{
 		mTimeOutListener.setTestCase(this);
@@ -98,13 +96,13 @@ namespace MATest
 	{
 	}
 
-	bool TestCase::assert(const String& assertionName, bool cond)
+	bool TestCase::assert(const MAUtil::String& assertionName, bool cond)
 	{
 		suite->fireAssertion(assertionName, cond);
 		return cond;
 	}
 
-	void TestCase::expect(const String& assertionName)
+	void TestCase::expect(const MAUtil::String& assertionName)
 	{
 		suite->fireExpectation(assertionName);
 	}
@@ -115,7 +113,7 @@ namespace MATest
 		runNextTestCase();
 	}
 
-	String TestCase::getName() const
+	MAUtil::String TestCase::getName() const
 	{
 		return name;
 	}
@@ -137,7 +135,7 @@ namespace MATest
 
 	/* ========== Class TestSuite ========== */
 
-	TestSuite::TestSuite(const String& name) :
+	TestSuite::TestSuite(const MAUtil::String& name) :
 		mName(name),
 		mCurrentTestCase(0),
 		mRunCounter(0),
@@ -164,22 +162,22 @@ namespace MATest
 // This code seems to run all test cases sequentially.
 #if 0
 	void TestSuite::runTestCases() {
-		for(int j = 0; j < mTestListeners.size(); j++) {
-			mTestListeners[j]->beginTestSuite(mName);
+		for(int i = 0; i < mTestListeners.size(); i++) {
+			mTestListeners[i]->beginTestSuite(mName);
 		}
 		for(int i = 0; i < mTestCases.size(); i++) {
-			for(int j = 0; j < mTestListeners.size(); j++) {
-				mTestListeners[j]->beginTestCase(mTestCases[i]->getName());
+			for(int i = 0; i < mTestListeners.size(); i++) {
+				mTestListeners[i]->beginTestCase(mTestCases[i]->getName());
 			}
 			mTestCases[i]->open();
 			mTestCases[i]->run();
 			mTestCases[i]->close();
-			for(int j = 0; j < mTestListeners.size(); j++) {
-				mTestListeners[j]->endTestCase();
+			for(int i = 0; i < mTestListeners.size(); i++) {
+				mTestListeners[i]->endTestCase();
 			}
 		}
-		for(int j = 0; j < mTestListeners.size(); j++) {
-			mTestListeners[j]->endTestSuite();
+		for(int i = 0; i < mTestListeners.size(); i++) {
+			mTestListeners[i]->endTestSuite();
 		}
 	}
 #endif
@@ -271,7 +269,7 @@ namespace MATest
 		}
 	}
 
-	const String& TestSuite::getName() const
+	const MAUtil::String& TestSuite::getName() const
 	{
 		return mName;
 	}
@@ -281,51 +279,59 @@ namespace MATest
 		mTestListeners.add(testListener);
 	}
 
-	void TestSuite::fireBeginTestSuite(const String& suiteName)
+	void TestSuite::fireBeginTestSuite(const MAUtil::String& suiteName)
 	{
-		for (int j = 0; j < mTestListeners.size(); j++)
+		for (int i = 0; i < mTestListeners.size(); i++)
 		{
-			mTestListeners[j]->beginTestSuite(suiteName);
+			mTestListeners[i]->beginTestSuite(suiteName);
 		}
 	}
 
 	void TestSuite::fireEndTestSuite()
 	{
-		for (int j = 0; j < mTestListeners.size(); j++)
+		for (int i = 0; i < mTestListeners.size(); i++)
 		{
-			mTestListeners[j]->endTestSuite();
+			mTestListeners[i]->endTestSuite();
 		}
 	}
 
-	void TestSuite::fireBeginTestCase(const String& testCaseName)
+	void TestSuite::fireBeginTestCase(const MAUtil::String& testCaseName)
 	{
-		for (int j = 0; j < mTestListeners.size(); j++)
+		for (int i = 0; i < mTestListeners.size(); i++)
 		{
-			mTestListeners[j]->beginTestCase(testCaseName);
+			mTestListeners[i]->beginTestCase(testCaseName);
 		}
 	}
 
 	void TestSuite::fireEndTestCase()
 	{
-		for (int j = 0; j < mTestListeners.size(); j++)
+		for (int i = 0; i < mTestListeners.size(); i++)
 		{
-			mTestListeners[j]->endTestCase();
+			mTestListeners[i]->endTestCase();
 		}
 	}
 
-	void TestSuite::fireAssertion(const String& assertionName, bool cond)
+	void TestSuite::fireAssertion(const MAUtil::String& assertionName, bool cond)
 	{
-		for (int j = 0; j < mTestListeners.size(); j++)
+		for (int i = 0; i < mTestListeners.size(); i++)
 		{
-			mTestListeners[j]->assertion(assertionName, cond);
+			mTestListeners[i]->assertion(assertionName, cond);
 		}
 	}
 
-	void TestSuite::fireExpectation(const String& assertionName)
+	void TestSuite::fireExpectation(const MAUtil::String& assertionName)
 	{
-		for (int j = 0; j < mTestListeners.size(); j++)
+		for (int i = 0; i < mTestListeners.size(); i++)
 		{
-			mTestListeners[j]->expectation(assertionName);
+			mTestListeners[i]->expectation(assertionName);
+		}
+	}
+
+	void TestSuite::fireTimedOut(const MAUtil::String& testCaseName)
+	{
+		for (int i = 0; i < mTestListeners.size(); i++)
+		{
+			mTestListeners[i]->timedOut(testCaseName);
 		}
 	}
 }

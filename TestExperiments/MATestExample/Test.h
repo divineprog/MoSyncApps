@@ -86,7 +86,7 @@ namespace MATest
 		/**
 		 * @brief Called when a test case times out.
 		 */
-		virtual void timedout(const MAUtil::String& testCaseName);
+		virtual void timedOut(const MAUtil::String& testCaseName);
 	};
 
 	/**
@@ -313,7 +313,7 @@ namespace MATest
 		/**
 		 * @brief Send timed out event to listeners.
 		 */
-		virtual void fireTimedOut(const MAUtil::String& assertionName);
+		virtual void fireTimedOut(const MAUtil::String& testCaseName);
 
 	protected:
 		/**

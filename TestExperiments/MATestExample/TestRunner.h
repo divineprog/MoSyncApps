@@ -44,8 +44,7 @@ namespace MATest
 	 *
 	 * This class is designed to be a singleton.
 	 */
-	class TestRunner :
-		public MAUtil::TimerListener
+	class TestRunner
 	{
 	public:
 		/**
@@ -272,11 +271,11 @@ namespace MATest
 
 	// ********** Macros **********
 
-	// Macros to make writing tests easier.
+	// Macro to make writing tests easier.
 	#define TESTCASE(testCaseClass) \
 		static MATest::TestCase* sTestCase = \
 			new testCaseClass(#testCaseClass); \
-		static RegisterTestCase __testCaseClass(sTestCase);
+		static MATest::RegisterTestCase __testCaseClass(sTestCase);
 
 } // namespace
 

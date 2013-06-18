@@ -62,7 +62,7 @@ namespace MATest
 
 	void TestRunner::setTestCaseDefaultTimeout(int ms)
 	{
-		mSuite.setTestCaseDefaultTimeout(listener);
+		mSuite.setTestCaseDefaultTimeout(ms);
 	}
 
 	void TestRunner::runTests()
@@ -82,6 +82,10 @@ namespace MATest
 	HighLevelTestListener::HighLevelTestListener()
 	{
 		reset();
+	}
+
+	HighLevelTestListener::~HighLevelTestListener()
+	{
 	}
 
 	void HighLevelTestListener::beginTestSuite(
@@ -108,7 +112,7 @@ namespace MATest
 		return (int) mTestCasesTimedOut.size();
 	}
 
-	String HighLevelTestListener::getTestCaseTimedOut(int index)
+	MAUtil::String HighLevelTestListener::getTestCaseTimedOut(int index)
 	{
 		return mTestCasesTimedOut[index];
 	}
@@ -123,7 +127,7 @@ namespace MATest
 		return (int) mAssertsFailed.size();
 	}
 
-	String HighLevelTestListener::getAssertFailed(int index)
+	MAUtil::String HighLevelTestListener::getAssertFailed(int index)
 	{
 		return mAssertsFailed[index];
 	}
@@ -133,7 +137,7 @@ namespace MATest
 		return (int) mAssertsExpected.size();
 	}
 
-	String HighLevelTestListener::getAssertExpected(int index)
+	MAUtil::String HighLevelTestListener::getAssertExpected(int index)
 	{
 		return mAssertsExpected[index];
 	}
@@ -150,7 +154,7 @@ namespace MATest
 		printf("Test cases timed out: %i\n", getNumberOfTestCasesTimedOut());
 		for (int i = 0; i < getNumberOfTestCasesTimedOut(); ++i)
 		{
-			printf("  %s\n", getTestCaseTimedOut[i].c_str());
+			printf("  %s\n", getTestCaseTimedOut(i).c_str());
 		}
 
 		// Asserts.
@@ -158,14 +162,14 @@ namespace MATest
 		printf("Asserts failed: %i\n", getNumberOfAssertsFailed());
 		for (int i = 0; i < getNumberOfAssertsFailed(); ++i)
 		{
-			printf("  %s\n", getAssertFailed[i].c_str());
+			printf("  %s\n", getAssertFailed(i).c_str());
 		}
 
 		// Expected asserts.
 		printf("Expects failed: %i\n", getNumberOfAssertsExpected());
 		for (int i = 0; i < getNumberOfAssertsExpected(); ++i)
 		{
-			printf("  %s\n", getAssertExpected[i].c_str());
+			printf("  %s\n", getAssertExpected(i).c_str());
 		}
 	}
 
@@ -199,7 +203,7 @@ namespace MATest
 		const MAUtil::String& assertionName,
 		bool cond)
 	{
-		String s = mCurrentTestCaseName + ":" + assertionName;
+		MAUtil::String s = mCurrentTestCaseName + ":" + assertionName;
 		if (!cond)
 		{
 			mAssertsFailed.add(s);
@@ -207,15 +211,15 @@ namespace MATest
 		else
 		{
 			mNumAssertsPassed ++;
-			eraseExpected(mExpectedAsserts, s);
+			eraseExpected(mAssertsExpected, s);
 		}
 	}
 
-	void HighLevelTestListener::expect(
+	void HighLevelTestListener::expectation(
 		const MAUtil::String& assertionName)
 	{
-		String s = mCurrentTestCaseName + ":" + assertionName;
-		mExpectedAsserts.add(s);
+		MAUtil::String s = mCurrentTestCaseName + ":" + assertionName;
+		mAssertsExpected.add(s);
 	}
 
 	void HighLevelTestListener::timedOut(
