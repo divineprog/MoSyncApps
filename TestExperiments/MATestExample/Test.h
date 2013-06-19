@@ -259,11 +259,6 @@ namespace MATest
 		virtual void addTestCase(TestCase* testCase);
 
 		/**
-		 * @brief Set the default timeout for test cases.
-		 */
-		virtual void setTestCaseDefaultTimeout(int ms);
-
-		/**
 		 * @brief Run the next test case.
 		 */
 		virtual void runNextCase();
@@ -340,13 +335,14 @@ namespace MATest
 		 * @brief Counter that tracks calls to runNextCase.
 		 */
 		int mRunCounter;
-
-		/**
-		 * @brief Default value for test case timeout.
-		 */
-		int mTestCaseDefaultTimeOut;
 	};
 
 } // namespace
 
 #endif
+
+// Include this for backwards compatibility for
+// code that includes Test.h and and uses 
+// XMLOutputTestListener (previously this class
+// was declared in Test.h).
+#include "XMLOutputTestListener.h"

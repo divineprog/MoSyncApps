@@ -40,7 +40,6 @@ namespace MATest
 	void TestListener::expectation(const MAUtil::String& assertionName) {}
 	void TestListener::timedOut(const MAUtil::String& testCaseName) {}
 
-
 	/* ========== Class TestCaseTimeOutListener ========== */
 
 	void TestCaseTimeOutListener::setTestCase(TestCase* testCase)
@@ -137,9 +136,8 @@ namespace MATest
 
 	TestSuite::TestSuite(const MAUtil::String& name) :
 		mName(name),
-		mCurrentTestCase(0),
-		mRunCounter(0),
-		mTestCaseDefaultTimeOut(20000) // 20 seconds
+		mCurrentTestCase(-1),
+		mRunCounter(0)
 	{
 	}
 
@@ -151,11 +149,6 @@ namespace MATest
 	{
 		mTestCases.add(testCase);
 		testCase->setSuite(this);
-	}
-
-	void TestSuite::setTestCaseDefaultTimeout(int ms)
-	{
-		mTestCaseDefaultTimeOut = ms;
 	}
 
 // TODO: Why is this commented out?
@@ -179,6 +172,15 @@ namespace MATest
 		for(int i = 0; i < mTestListeners.size(); i++) {
 			mTestListeners[i]->endTestSuite();
 		}
+	}
+#endif
+
+#if(0)
+	// TODO: Should we use this rather than resetting
+	// mCurrentTestCase in runNextCaseHelper()?
+	void TestSuite::reset()
+	{
+		mCurrentTestCase = -1;
 	}
 #endif
 
@@ -222,45 +224,43 @@ namespace MATest
 		// There must be test cases to run.
 		if (mTestCases.size() > 0)
 		{
+			// Increment test case index.
+			mCurrentTestCase ++;
+
 			// Is this the first test case?
 			if (0 == mCurrentTestCase)
 			{
 				// Signal beginning of the test suite.
 				fireBeginTestSuite(mName);
 			}
-
-			// If last test case has been run, reset the
-			// test case index and end the suite.
-			if (mCurrentTestCase >= mTestCases.size())
-			{
-				mCurrentTestCase = 0;
-				fireEndTestSuite();
-				return;
-			}
-
 			// If this is not the first test case then
 			// signal the end of the previous test case.
-			if (mCurrentTestCase > 0)
+			else
 			{
-				// Close/clear the current test case.
-				testCase = mTestCases[mCurrentTestCase];
+				// Close/clear the previous test case.
+				testCase = mTestCases[mCurrentTestCase - 1];
 				testCase->clearTimeOut();
 				testCase->close();
 				fireEndTestCase();
 			}
 
+			// If last test case has been run, reset the
+			// test case index and end the suite.
+			if (mCurrentTestCase >= mTestCases.size())
+			{
+				mCurrentTestCase = -1;
+				fireEndTestSuite();
+				return;
+			}
+
 			// Get the current test case.
 			testCase = mTestCases[mCurrentTestCase];
-
-			// Increment test case index.
-			mCurrentTestCase ++;
 
 			// Open the current test case.
 			fireBeginTestCase(testCase->getName());
 			testCase->open();
 
 			// Run current test case.
-			testCase->setTimeOut(mTestCaseDefaultTimeOut);
 			testCase->start();
 
 			// Note: We do not call fireEndTestCase() here,

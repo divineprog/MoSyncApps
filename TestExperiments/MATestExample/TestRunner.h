@@ -70,11 +70,6 @@ namespace MATest
 		void addTestListener(MATest::TestListener* listener);
 
 		/**
-		 * @brief Set the default timeout for test cases.
-		 */
-		void setTestCaseDefaultTimeout(int ms);
-
-		/**
 		 * @brief Start running tests.
 		 */
 		void runTests();
@@ -206,6 +201,9 @@ namespace MATest
 
 		/**
 		 * @brief Saves the name of the current test case.
+		 * If you override this method, make sure you save
+		 * the test case name, call the superclass method
+		 * (the method in this class) to do so.
 		 */
 		virtual void beginTestCase(const MAUtil::String& testCaseName);
 

@@ -60,11 +60,6 @@ namespace MATest
 		mSuite.addTestListener(listener);
 	}
 
-	void TestRunner::setTestCaseDefaultTimeout(int ms)
-	{
-		mSuite.setTestCaseDefaultTimeout(ms);
-	}
-
 	void TestRunner::runTests()
 	{
 		mSuite.runNextCase();
@@ -177,6 +172,7 @@ namespace MATest
 		const MAUtil::String& testCaseName)
 	{
 		mCurrentTestCaseName = testCaseName;
+		//printf("Running testcase: %s\n", testCaseName.c_str());
 	}
 
 	void HighLevelTestListener::endTestCase()
@@ -186,7 +182,7 @@ namespace MATest
 
 	// Helper function for removing an entry from the expected list.
 	void eraseExpected(
-		MAUtil::Vector<MAUtil::String> v,
+		MAUtil::Vector<MAUtil::String>& v,
 		const MAUtil::String& s)
 	{
 		for (int i = 0; i < v.size(); ++i)

@@ -17,6 +17,8 @@ public:
 
 	void start()
 	{
+		setTimeOut(5000);
+
 		expect("DataDownloaded");
 
 		mDownloader.addDownloadListener(this);
